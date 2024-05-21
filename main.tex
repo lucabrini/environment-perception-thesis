@@ -1,0 +1,59 @@
+\documentclass[a4paper, oneside]{book}
+\usepackage{graphicx} % allows inserting graphics
+\usepackage{listings}
+\usepackage{algpseudocode} % allows code snippets
+\usepackage{algorithm}
+\usepackage{hyperref} % allows
+\usepackage{subcaption} 
+\usepackage[export]{adjustbox} 
+\usepackage{wrapfig} % allows warped figures
+\usepackage[acronym]{glossaries} % add glossary
+\usepackage{acronym} % add acronyms
+\usepackage{subfiles} % support multiple files
+\usepackage{fancyhdr} % more control on headers and footers
+\graphicspath{ {./images/} }
+
+\pagestyle{plain} %oppure none
+% Altrimenti usare fancy header per più controllo: https://www.overleaf.com/learn/latex/Headers_and_footers#Using_the_fancyhdr_package
+
+
+%\usepackage{biblatex} 
+\usepackage[
+backend=biber,
+style=ieee,
+sorting=ynt
+]{biblatex}
+\addbibresource{bigliography.bib}
+
+
+\makeglossaries
+
+\begin{document}
+
+%\maketitle
+\subfile{src/frontispiece}
+
+
+\tableofcontents
+
+\subfile{src/introduction.tex}
+\subfile{src/robee.tex}
+\subfile{src/scene_graph.tex}
+\subfile{src/room_recognition.tex}
+
+\chapter{Bibliography}
+
+Here the student should list all the references used for writing the report. As presented in a dedicated document, there are many styles that can be used to write it. Two styles often adopted are:
+APA style: it is known for its author-date citation system and detailed guidelines for formatting references; (e.g. Surname et al., 2023).
+IEEE style: it is specifically designed for writing in the fields of engineering and computer science. It uses a numeric citation system, where sources are numbered in the order they appear in the text; (e.g. [1], bla bla [2].).
+Generally speaking, however, text editors (whether Word or LaTeX) should be set up automatically to generate this type of bibliography, providing links from the text to external resources.
+
+
+\chapter{Appendix}
+
+An appendix is an optional “chapter” that provides additional information such as extended tables of results, images, or code snippets. It is possible to have multiple appendices. Usually, the appendices use a different numbering scheme than the other chapters. (e.g.: if you have chapters 1, 2, 3, … you will have appendix A, B, C, …). Especially if the work was experimental, there will be a lot of results (“numbers”, metrics, and so on): most of this data can be included in an appendix, while only the most relevant figures are included in the main body of the thesis. If some data was collected by using questionnaires, the questions and results can be  included in the appendix. In general, all material useful for reproducing exactly the work done (code, parameters, etc.) should be included, possibly also with external links to repositories or edited documents. Information that is strictly necessary to understand the manuscript should not be included in the appendices and directly go in the main body.
+
+
+\end{document}
+
+

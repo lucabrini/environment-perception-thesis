@@ -1,0 +1,11 @@
+.out  
+*.acn
+*.aux
+*.bcf
+*.glo
+*.ist
+*.log
+*.out    
+*.run.xml
+*.synctex.gz
+*.toc

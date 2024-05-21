@@ -1,0 +1,15 @@
+{
+  "files.exclude": {
+    "**/._*": true,
+    "*.acn": true,
+    "*.aux": true,
+    "*.bcf": true,
+    "*.glo": true,
+    "*.ist": true,
+    "*.log": true,
+    "*.out": true,
+    "*.run.xml": true,
+    "*.synctex.gz": true,
+    "*.toc": true
+  }
+}
