@@ -11,13 +11,12 @@
 \usepackage{acronym} % add acronyms
 \usepackage{subfiles} % support multiple files
 \usepackage{fancyhdr} % more control on headers and footers
+\usepackage[italian]{babel} % set language
+
 \graphicspath{ {./images/} }
 
 \pagestyle{plain} %oppure none
-% Altrimenti usare fancy header per più controllo: https://www.overleaf.com/learn/latex/Headers_and_footers#Using_the_fancyhdr_package
 
-
-%\usepackage{biblatex} 
 \usepackage[
 backend=biber,
 style=ieee,
@@ -37,9 +36,8 @@ sorting=ynt
 \tableofcontents
 
 \subfile{src/introduction.tex}
-\subfile{src/robee.tex}
 \subfile{src/scene_graph.tex}
-\subfile{src/room_recognition.tex}
+\subfile{src/room_recognition.tex}1
 
 \chapter{Bibliography}
 
@@ -51,7 +49,7 @@ Generally speaking, however, text editors (whether Word or LaTeX) should be set 
 
 \chapter{Appendix}
 
-An appendix is an optional “chapter” that provides additional information such as extended tables of results, images, or code snippets. It is possible to have multiple appendices. Usually, the appendices use a different numbering scheme than the other chapters. (e.g.: if you have chapters 1, 2, 3, … you will have appendix A, B, C, …). Especially if the work was experimental, there will be a lot of results (“numbers”, metrics, and so on): most of this data can be included in an appendix, while only the most relevant figures are included in the main body of the thesis. If some data was collected by using questionnaires, the questions and results can be  included in the appendix. In general, all material useful for reproducing exactly the work done (code, parameters, etc.) should be included, possibly also with external links to repositories or edited documents. Information that is strictly necessary to understand the manuscript should not be included in the appendices and directly go in the main body.
+\subfile{src/robee.tex}
 
 
 \end{document}

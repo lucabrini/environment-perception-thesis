@@ -11,5 +11,10 @@
     "*.run.xml": true,
     "*.synctex.gz": true,
     "*.toc": true
+  },
+  "[latex]": {
+    "editor.formatOnPaste": false,
+    "editor.suggestSelection": "recentlyUsedByPrefix",
+    "editor.wordWrap": "on"
   }
 }
