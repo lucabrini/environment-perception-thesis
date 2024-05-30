@@ -1,55 +1,80 @@
 \documentclass[a4paper, oneside]{book}
+\usepackage{csquotes}
 \usepackage{graphicx} % allows inserting graphics
 \usepackage{listings}
 \usepackage{algpseudocode} % allows code snippets
 \usepackage{algorithm}
 \usepackage{hyperref} % allows
 \usepackage{subcaption} 
-\usepackage[export]{adjustbox} 
 \usepackage{wrapfig} % allows warped figures
-\usepackage[acronym]{glossaries} % add glossary
-\usepackage{acronym} % add acronyms
 \usepackage{subfiles} % support multiple files
 \usepackage{fancyhdr} % more control on headers and footers
 \usepackage[italian]{babel} % set language
-
-\graphicspath{ {./images/} }
-
-\pagestyle{plain} %oppure none
 
 \usepackage[
 backend=biber,
 style=ieee,
 sorting=ynt
 ]{biblatex}
-\addbibresource{bigliography.bib}
+\addbibresource{bibliography.bib}
 
+\graphicspath{ {./images/} }
 
-\makeglossaries
+\pagestyle{plain} %oppure none
 
 \begin{document}
 
-%\maketitle
 \subfile{src/frontispiece}
-
 
 \tableofcontents
 
+% Introduzione
+
+\chapter*{Introduzione}
+\addcontentsline{toc}{chapter}{Introduzione}
+
 \subfile{src/introduction.tex}
+
+% Stato dell'arte
+\chapter{Stato dell'Arte}
+\subfile{src/state_of_the_art.tex}
+
+% Mappe semantiche
+\chapter{Mappe semantiche}
+
+\subfile{src/semantic_maps.tex}
+
+% Grafo di Scena
+\chapter{Grafo di Scena}
+
 \subfile{src/scene_graph.tex}
-\subfile{src/room_recognition.tex}1
 
-\chapter{Bibliography}
+% Riconoscimento di Stanze
+\chapter{Riconoscimento di Stanze}
 
-Here the student should list all the references used for writing the report. As presented in a dedicated document, there are many styles that can be used to write it. Two styles often adopted are:
-APA style: it is known for its author-date citation system and detailed guidelines for formatting references; (e.g. Surname et al., 2023).
-IEEE style: it is specifically designed for writing in the fields of engineering and computer science. It uses a numeric citation system, where sources are numbered in the order they appear in the text; (e.g. [1], bla bla [2].).
-Generally speaking, however, text editors (whether Word or LaTeX) should be set up automatically to generate this type of bibliography, providing links from the text to external resources.
+\subfile{src/room_recognition.tex}
 
+% Risultati
+\chapter{Analisi e Risultati}
 
-\chapter{Appendix}
+\subfile{src/results.tex}
+
+% Conclusioni
+\chapter{Conclusioni e Sviluppi Futuri}
+
+\subfile{src/conclusions.tex}
+
+% Appendice
+\chapter*{Appendice}
+\addcontentsline{toc}{chapter}{Appendice}
 
 \subfile{src/robee.tex}
+
+% Bibliografia
+\chapter*{Bibliografia}
+\addcontentsline{toc}{chapter}{Bibliografia}
+
+\printbibliography
 
 
 \end{document}
