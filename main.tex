@@ -9,8 +9,15 @@
 \usepackage{wrapfig} % allows warped figures
 \usepackage{subfiles} % support multiple files
 \usepackage{fancyhdr} % more control on headers and footers
+\usepackage{tikz}
+\usepackage{tikz-uml}
+\usetikzlibrary{positioning}
+\usetikzlibrary{graphs}
+\usepackage{amsmath}
 \usepackage[italian]{babel} % set language
-
+\usepackage{quiver}
+\usepackage{wrapfig}
+\usepackage{float}
 \usepackage[
 backend=biber,
 style=ieee,
@@ -21,6 +28,7 @@ sorting=ynt
 \graphicspath{ {./images/} }
 
 \pagestyle{plain} %oppure none
+\author{Luca Brini}
 
 \begin{document}
 
@@ -45,12 +53,12 @@ sorting=ynt
 \subfile{src/semantic_maps.tex}
 
 % Grafo di Scena
-\chapter{Grafo di Scena}
+\chapter{Grafo di Scena}\label{chap:grafo_di_scena}
 
 \subfile{src/scene_graph.tex}
 
 % Riconoscimento di Stanze
-\chapter{Riconoscimento di Stanze}
+\chapter{Riconoscimento di Stanze}\label{chap:riconoscimento_stanze}
 
 \subfile{src/room_recognition.tex}
 
@@ -65,14 +73,10 @@ sorting=ynt
 \subfile{src/conclusions.tex}
 
 % Appendice
-\chapter*{Appendice}
-\addcontentsline{toc}{chapter}{Appendice}
+\appendix
+\chapter{Appendice}
 
 \subfile{src/robee.tex}
-
-% Bibliografia
-\chapter*{Bibliografia}
-\addcontentsline{toc}{chapter}{Bibliografia}
 
 \printbibliography
 
