@@ -11,11 +11,12 @@
     "*.run.xml": true,
     "*.synctex.gz": true,
     "*.toc": true,
-    "*.bbl" : true
+    "*.bbl": true
   },
   "[latex]": {
     "editor.wordWrap": "on"
   },
   //"latex-workshop.latex.autoClean.run": "onBuilt",
   "latex-workshop.latex.autoBuild.run": "onSave",
+  "todo-tree.tree.scanMode": "current file"
 }
