@@ -10,6 +10,7 @@
 \usepackage{subfiles} % support multiple files
 \usepackage{fancyhdr} % more control on headers and footers
 \usepackage{tikz}
+\usepackage{glossaries}
 \usepackage{tikz-uml}
 \usetikzlibrary{positioning}
 \usetikzlibrary{graphs}
@@ -30,6 +31,9 @@ sorting=ynt
 \pagestyle{plain} %oppure none
 \author{Luca Brini}
 
+\input{glossary.tex}
+\makenoidxglossaries
+
 \begin{document}
 
 \subfile{src/frontispiece}
@@ -37,7 +41,6 @@ sorting=ynt
 \tableofcontents
 
 % Introduzione
-
 \chapter*{Introduzione}
 \addcontentsline{toc}{chapter}{Introduzione}
 
@@ -77,6 +80,8 @@ sorting=ynt
 \chapter{Appendice}
 
 \subfile{src/robee.tex}
+
+\printnoidxglossaries
 
 \printbibliography
 

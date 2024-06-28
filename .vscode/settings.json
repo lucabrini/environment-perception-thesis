@@ -11,7 +11,8 @@
     "*.run.xml": true,
     "*.synctex.gz": true,
     "*.toc": true,
-    "*.bbl": true
+    "*.bbl": true,
+    "*.blg": true
   },
   "[latex]": {
     "editor.wordWrap": "on"

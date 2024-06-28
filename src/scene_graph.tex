@@ -36,7 +36,10 @@ La segmentazione panoptica individua gli oggetti e assegna a ogni pixel la label
   \item Riduce anche le informazioni ridondanti o irrilevanti presenti nei dataset basati su bounding box, focalizzandosi sulla segmentazione degli oggetti piuttosto che sulle loro parti.
 \end{itemize}
 \paragraph*{Funzionamento di PSGTr}
-Essendo l'architettura di PSGTr basata su DETR \cite{detr} e HOI \cite{hoi}, il modello predice triple $(soggetto, predicato, verbo)$ e la localizzazione degli oggetti simultaneamente.
+L'architettura di PSGTr basata su DETR \cite{detr} e HOI \cite{hoi}. Il modello predice triple $(soggetto, predicato, verbo)$ e la localizzazione degli oggetti simultaneamente.
+\subparagraph*{Pipeline PSGTr}
+Attraverso una \gls{backbone} CNN, PSGTr estrae le features dell'immagine che successivamente vengono date in input insieme alle triplet queries e ai positional encodings nel transformer encoder-decoder. In questo processo, l'obiettivo è che le query apprendano la rappresentazione del grafo di scena a triple in modo che per ognuna di esse, le predictions di  $(soggetto, predicato, verbo)$ possano successivamente essere estratte da tre Feed Forward Network. Infine, il task di segmentazione viene eseguito da due head panoptiche, una per il soggetto e una per l'oggetto.
+
 % TODO: manca la pipeline
 \subsection{Costruzione del grafo}
 L'algoritmo di costruzione del grafo è costituito da 2 fasi principali:
