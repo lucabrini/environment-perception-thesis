@@ -9,7 +9,6 @@ La generazione del grafo di scena è un passo fondamentale per il mantenimento d
 Il grafo di scena è una struttura dati che rappresenta gli oggetti presenti nell'ambiente e le relazioni tra loro composto da nodi e archi. I nodi rappresentano gli oggetti, mentre gli archi rappresentano le relazioni tra gli oggetti.
 
 \subsection{Lettura del frame RGB-D}
-
 All'interno dell'architettura cloud-native di Robee vi è la presenza di un pod chiamato "Streaming Module" il cui compito è streammare il feed video delle camera sul pod redis del robot, in modo che gli altri servizi o moduli possano accedere a questi dati tramite l'utilizzo di librerie wrapper, rendendo il tutto agnostico rispetto alla tipologia e modello di videocamera montati.
 
 \subsection{Inferenza}
@@ -36,12 +35,12 @@ La segmentazione panoptica individua gli oggetti e assegna a ogni pixel la label
   \item Riduce anche le informazioni ridondanti o irrilevanti presenti nei dataset basati su bounding box, focalizzandosi sulla segmentazione degli oggetti piuttosto che sulle loro parti.
 \end{itemize}
 \paragraph*{Funzionamento di PSGTr}
-L'architettura di PSGTr basata su DETR \cite{detr} e HOI \cite{hoi}. Il modello predice triple $(soggetto, predicato, verbo)$ e la localizzazione degli oggetti simultaneamente.
+L'architettura di PSGTr è basata su DETR \cite{detr} e HOI \cite{hoi}. Il modello predice triple $(soggetto, predicato, verbo)$ e la localizzazione degli oggetti simultaneamente.
 \subparagraph*{Pipeline PSGTr}
-Attraverso una \gls{backbone} CNN, PSGTr estrae le features dell'immagine che successivamente vengono date in input insieme alle triplet queries e ai positional encodings nel transformer encoder-decoder. In questo processo, l'obiettivo è che le query apprendano la rappresentazione del grafo di scena a triple in modo che per ognuna di esse, le predictions di  $(soggetto, predicato, verbo)$ possano successivamente essere estratte da tre Feed Forward Network. Infine, il task di segmentazione viene eseguito da due head panoptiche, una per il soggetto e una per l'oggetto.
+Attraverso una \gls{backbone} CNN, PSGTr estrae le features dell'immagine e i positional encodings che, insieme alle triplet queries, vengono dati in input al transformer encoder-decoder. In questo processo, l'obiettivo è che le query apprendano la rappresentazione del grafo di scena a triple in modo che per ognuna di esse, le predictions di  $(soggetto, predicato, verbo)$ possano successivamente essere estratte da tre Feed Forward Network. Infine, il task di segmentazione viene eseguito da due head panoptiche, una per il soggetto e una per l'oggetto della relazione.
 
-% TODO: manca la pipeline
 \subsection{Costruzione del grafo}
+L'obiettivo di questo step è la costruzione del grafo di scena rispetto all'ultimo frame. Per farlo, è necessario estrarre i dati dai risultati dell'inferenza di PSGTr e calcolare quei valori che dipendono dal sistema robot, come la posizione. 
 L'algoritmo di costruzione del grafo è costituito da 2 fasi principali:
 \begin{itemize}
   \item Costruzione dei nodi per la scena semantica e per la mappa semantica:
@@ -53,66 +52,27 @@ L'algoritmo di costruzione del grafo è costituito da 2 fasi principali:
 
 \subsubsection{Costruzione dei nodi}
 \paragraph{Estrazione dati dai risultati}
-% TODO: Da fare
-Estrazione labels, maschere e bounding box dagli mmdections\_results
-\paragraph{Calcolo posizioni 3d}
-% TODO: Da fare
-Prendi la posa delle camere, prendi la terna $x,y,z$ dell'oggetto mascherando il point cloud, applica la matrice camera inversa, get\_tf(posa camera, posizione oggetto dopo camera inversa)
+L'oggetto MMDetResult ritornato dalla funzione di inferenza del modello, come detto precedentemente, possiede un attributo $labels$ che è una lista con lunghezza pari al numero di oggetti rilevati dove il valore $i$-esimo, indica l'indice della classe di appartenenza dell'oggetto $i$. Lo stesso meccanismo vale anche per le maschere.
 
-
-Di seguito è illustrato lo pseudocodice dell'algoritmo in questione.
-\begin{algorithm}[H]
-  \caption{Costruzione del Grafo di Scena dai risultati dell'inferenza}
+\begin{algorithm}
+  \caption{Estrazione classi e maschere degli oggetti individuati}
   \begin{algorithmic}[1]
-  \Procedure{BuildGraph}{$detectionResults, frame$}
-  \State $rel\_obj\_labels \gets detectionResults.labels$
-  \For{ $l$ in $rel\_obj\_labels$}
-    \State $rel\_obj.append(PSG\_CLASSES[l - 1])$
-  \EndFor
-  \State $rel\_dists \gets mmdet\_results.rel\_dists[:, 1:]$
-  \State $rel\_scores \gets \text{max}(rel\_dists, axis=1)$
-  
-  \State $rel\_top\_idx \gets \text{where}(rel\_scores > \theta)$
-  \State $rel\_labels\_topk \gets \text{argmax}(rel\_dists[rel\_top\_idx], axis=1)$
-  \State $rel\_pair\_idxes\_topk \gets mmdet\_results.rel\_pair\_idxes[rel\_top\_idx]$
-  \State $relations \gets \text{concatenate}([rel\_pair\_idxes\_topk, rel\_labels\_topk])$
-  
-  \For{$i=0 \text{ to } \text{length}(rel\_obj\_labels)$}\Comment{Costruzione nodi}
-      \State $id \gets$ Generate node uuid 
-      \State $obj\_map\_position \gets$ Object 3d position map referenced
-      \State $obj\_robot\_position \gets$ Object 3d position robot referenced
-      \State $node \gets$ Create Node
-      \State $camera\_distance \gets distance(obj\_robot\_position - camera\_position)$
-      \State $in\_range \gets max\_distance \geq camera\_distance \geq min\_distance$
-      \If{$in\_range \text{ and } rel\_obj\_labels[i] \notin bannedLabels$}
-          \State $map\_graph.add\_node(node)$
-          \If{$camera\_distance \leq frame\_max\_distance$}
-            \State $frame\_graph.add\_node(node)$
-          \EndIf
-      \EndIf
-  \EndFor
-  
-  \For{$r \text{ in } relations$}\Comment{Costruzione archi}
-      \State $s\_idx, o\_idx, rel\_id \gets r$
-      \State $s\_uuid \gets int\_uuid\_mapping[s\_idx]$
-      \State $o\_uuid \gets int\_uuid\_mapping[o\_idx]$
-      \If{$map\_graph.get\_node(s\_uuid) \neq \text{None} \text{ and } map\_graph.get\_node(o\_uuid) \neq \text{None}$}
-          \For{$obj \text{ in } ["s", "o"]$}
-              \State $side \gets \text{locals()}[f"{obj}\_idx"]$
-              \State $map\_edge \gets \text{SemanticMapEdge.load}(\{ "source": s\_uuid, "target": o\_uuid, "label": PREDICATES[rel\_id] \})$
-              \State $map\_graph.add\_edge(map\_edge)$
-              \If{$frame\_graph.get\_node(s\_idx) \neq \text{None} \text{ and } frame\_graph.get\_node(o\_idx) \neq \text{None}$}
-                  \State $frame\_edge \gets \text{SemanticMapEdge.load}(\{ "source": str(s\_idx), "target": str(o\_idx), "label": PREDICATES[rel\_id] \})$
-                  \State $frame\_graph.add\_edge(frame\_edge)$
-              \EndIf
-          \EndFor
-      \EndIf
-  \EndFor
-  
-  \Return $map\_graph, frame\_graph$
-  \EndProcedure
+    \State $obj\_classes \gets \text{[ ]}$
+    \State $obj\_masks \gets \text{[ ]}$
+    \State $obj\_labels\_ids \gets detectionResults.labels$
+    \For{ $i=0$ to $obj\_labels\_ids.length$}
+      \State $obj\_classes.append(PSG\_CLASSES[obj\_labels\_ids[i]])$
+      \State $obj\_masks.append(detectionResults.masks[i])$
+    \EndFor
   \end{algorithmic}
-  \end{algorithm}
+\end{algorithm}
+
+
+\paragraph{Calcolo posizioni 3d}
+Per ogni oggetto, si estrae la posizione 3D nella mappa del robot in modo che questo possa successivamente localizzarlo e raggiungerlo.
+\subparagraph{Utilizzo del Point Cloud}
+\subparagraph{Utilizzo della Matrice Inversa della Camera}
+\subparagraph{Utilizzo della Matrici di trasformazione}
 
 \subsubsection{Costruzione degli archi}
 

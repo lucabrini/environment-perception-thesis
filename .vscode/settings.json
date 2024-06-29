@@ -12,7 +12,9 @@
     "*.synctex.gz": true,
     "*.toc": true,
     "*.bbl": true,
-    "*.blg": true
+    "*.blg": true,
+    "*.glg": true,
+    "*.gls": true
   },
   "[latex]": {
     "editor.wordWrap": "on"
