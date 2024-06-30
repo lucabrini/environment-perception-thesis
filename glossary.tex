@@ -1,6 +1,75 @@
 \newglossaryentry{backbone}{
   name=backbone,
   description={
-    Architettura di rete neurale pre-addestrata che funge da base per ulteriori sviluppi e adattamenti specifici di una particolare applicazione. Grazie al transfer learning è possibile costruire architetture per task complessi sopra a questo modello. Utilizzata molto spesso nella visione artificiale come supporto.
-  }
+      Architettura di rete neurale pre-addestrata che funge da base per ulteriori sviluppi e adattamenti specifici di una particolare applicazione. Grazie al transfer learning è possibile costruire architetture per task complessi sopra a questo modello. Utilizzata molto spesso nella visione artificiale come supporto
+    }
+}
+
+\newglossaryentry{point_cloud}{
+  name={point cloud},
+  description={ Raccolta di dati che rappresenta oggetti o superfici tridimensionali. Ogni punto nella nuvola ha coordinate (x, y, z) che ne definiscono la posizione nello spazio. A volte, ai punti sono associati anche altri attributi, come colore o intensità
+    }
+}
+
+\newglossaryentry{camera_system}{
+  name={sistema camera},
+  description={Sistema di coordinate che prevede la camera nell'origine, solitamente al centro. Tutte le coordinate espresse in questo sistema hanno quindi come riferimento la posizione della camera}
+}
+
+\newglossaryentry{pixel_system}{
+  name={sistema pixel},
+  description={Sistema di coordinate intere 2D con l'origine in alto a sinistra}
+}
+
+\newglossaryentry{transformation_matrix}{
+  name={matrice di trasformazione},
+  description={Matrice che viene utilizzata per descrivere come un oggetto o un insieme di punti nello spazio viene modificato da una trasformazione geometrica}
+}
+
+\newglossaryentry{homogeneous_transformation_matrix}{
+  name={matrice di trasformazione affine},
+  description={Matrice di trasformazione 4x4 che combina rotazione traslazione.
+      \[
+        \begin{bmatrix}
+          R_{11} & R_{12} & R_{13} & T_x \\
+          R_{21} & R_{22} & R_{23} & T_y \\
+          R_{31} & R_{32} & R_{33} & T_z \\
+          0      & 0      & 0      & 1
+        \end{bmatrix}
+      \]
+      Dove:
+      \begin{itemize}
+        \item $R_{11}, R_{12}, R_{13}, ..., R_{33}$ sono gli elementi della matrice di rotazione 3x3.
+        \item  $T_x, T_y, T_z$ sono le componenti del vettore di traslazione.
+      \end{itemize}
+      Attraverso una sola moltiplicazione di matrici è possibile applicare sia la rotazione che la traslazione ad un punto $(x,y,z)$
+      \[
+        \begin{bmatrix}
+          x' \\
+          y' \\
+          z' \\
+          1
+        \end{bmatrix}
+        =
+        \begin{bmatrix}
+          R_{11} & R_{12} & R_{13} & T_x \\
+          R_{21} & R_{22} & R_{23} & T_y \\
+          R_{31} & R_{32} & R_{33} & T_z \\
+          0      & 0      & 0      & 1
+        \end{bmatrix}
+        *
+        \begin{bmatrix}
+          x \\
+          y \\
+          z \\
+          1
+        \end{bmatrix}
+      \]
+      Il risultato $(x', y', z')$ rappresenta le nuove coordinate del punto dopo la trasformazione
+    }
+}
+
+\newglossaryentry{tf_tree}{
+  name={albero delle TF},
+  description={Struttura ad albero che descrive le relazioni spaziali tra i diversi componenti di un robot. Ogni nodo dell'albero rappresenta un sistema di coordinate, e ogni ramo rappresenta una trasformazione (rotazione e traslazione) che collega un sistema di coordinate al suo sistema padre}
 }
