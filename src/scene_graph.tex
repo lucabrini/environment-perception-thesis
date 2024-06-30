@@ -36,7 +36,7 @@ La segmentazione panoptica individua gli oggetti e assegna a ogni pixel la label
 \end{itemize}
 \paragraph*{Funzionamento di PSGTr}
 L'architettura di PSGTr è basata su DETR \cite{detr} e HOI \cite{hoi}. Il modello predice triple $(soggetto, predicato, verbo)$ e la localizzazione degli oggetti simultaneamente.
-\subparagraph*{Pipeline PSGTr}
+\paragraph*{Pipeline PSGTr}
 Attraverso una \gls{backbone} CNN, PSGTr estrae le features dell'immagine e i positional encodings che, insieme alle triplet queries, vengono dati in input al transformer encoder-decoder. In questo processo, l'obiettivo è che le query apprendano la rappresentazione del grafo di scena a triple in modo che per ognuna di esse, le predictions di  $(soggetto, predicato, verbo)$ possano successivamente essere estratte da tre Feed Forward Network. Infine, il task di segmentazione viene eseguito da due head panoptiche, una per il soggetto e una per l'oggetto della relazione.
 
 \subsection{Costruzione del grafo}
@@ -68,12 +68,38 @@ L'oggetto MMDetResult ritornato dalla funzione di inferenza del modello, come de
 \end{algorithm}
 
 
-\paragraph{Calcolo posizioni 3d}
+\paragraph{Calcolo posizioni 3D}
 Per ogni oggetto, si estrae la posizione 3D nella mappa del robot in modo che questo possa successivamente localizzarlo e raggiungerlo.
-\subparagraph{Utilizzo del Point Cloud}
-\subparagraph{Utilizzo della Matrice Inversa della Camera}
-\subparagraph{Utilizzo della Matrici di trasformazione}
+\subparagraph{Calcolo della $z$ di un oggetto}
+Le maschere generate dal modello consentono di calcolare il centroide $(x_i, y_i)$ dell'oggetto $i$-esimo. Tuttavia, queste maschere forniscono solo un valore in due dimensioni. Per il calcolo del valore $z_i$ si utilizza il Point Cloud che, combinando il frame RGB con il frame Depth, permette di ottenere una rappresentazione 3D della scena. \\
+Per ogni oggetto $i$, si maschera il Point Cloud con la maschera $i$-esima e si calcola $z_i$ come valore mediano tra le $z_s$ di tutti i punti mascherati.
+% Reference System Image with panoptic example
+\begin{figure}[h]
+  \tdplotsetmaincoords{-10}{0}
+  \begin{tikzpicture}[tdplot_main_coords]
+    \begin{scope}[canvas is xy plane at z=0]
+      \node[anchor=north west, inner sep=0] at (0,0) {\includegraphics[width=4cm]{scene_graph/segmentation_labeling.png}};
+    \end{scope}
 
+    % Draw the x-axis vector
+    \draw[->, thick, red] (0,0,0) -- (3,0,0) node[anchor=north east]{$\mathbf{x}$};
+
+    % Draw the y-axis vector
+    \draw[->, thick, green] (0,0,0) -- (0,-2.8,0) node[anchor=north west]{$\mathbf{y}$};
+    
+    % Draw the z-axis vector
+    \draw[->, thick, blue] (0,0,0) -- (1,0.5,-3) node[anchor=south]{$\mathbf{z}$};
+    
+    % Add labels for the origin
+    \node at (0,0.4,0) [below left] {O};
+  \end{tikzpicture}
+  \caption{Sistema di riferimento del risultato $(x,y,z)$}
+\end{figure}
+  
+\subparagraph{Calcolo posizione 3D rispetto alla camera}
+% https://towardsdatascience.com/what-are-intrinsic-and-extrinsic-camera-parameters-in-computer-vision-7071b72fb8ec
+\subparagraph{Calcolo posizione 3D rispetto alla mappa}
+% https://wiki.ros.org/tf
 \subsubsection{Costruzione degli archi}
 
 \section{Aggiormento del Mappa Semantica}
