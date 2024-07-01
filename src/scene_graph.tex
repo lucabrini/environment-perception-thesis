@@ -6,10 +6,10 @@ In questo capitolo verrà affrontata la generazione del grafo di scena dato un f
 
 \section{Generazione del Grafo di Scena}
 La generazione del grafo di scena è un passo fondamentale per il mantenimento della coerenza tra Mappa Semantica e Ambiente reale.\\
-Il grafo di scena è una struttura dati che rappresenta gli oggetti presenti nell'ambiente e le relazioni tra loro composto da nodi e archi. I nodi rappresentano gli oggetti, mentre gli archi rappresentano le relazioni tra gli oggetti.
-
+Il grafo di scena è una struttura dati che rappresenta gli oggetti presenti nell'ambiente e le relazioni tra loro composto da nodi e archi. I nodi rappresentano gli oggetti, mentre gli archi rappresentano le relazioni tra gli oggetti. \\
+In questa sezione verrà affrontata la costruzione di questa struttura dati a partire da un frame RGB-D e il modello di ML utilizzato per l'inferenza degli oggetti e delle relazioni.
 \subsection{Lettura del frame RGB-D}
-All'interno dell'architettura cloud-native di Robee vi è la presenza di un pod chiamato "Streaming Module" il cui compito è streammare il feed video delle camera sul pod redis del robot, in modo che gli altri servizi o moduli possano accedere a questi dati tramite l'utilizzo di librerie wrapper, rendendo il tutto agnostico rispetto alla tipologia e modello di videocamera montati.
+All'interno dell'architettura cloud-native di Robee vi è la presenza di un pod chiamato "Streaming Module" il cui compito è streammare il feed video delle camera sul pod redis del robot, in modo che gli altri servizi o moduli possano accedere a questi dati tramite l'utilizzo di librerie wrapper, rendendo il tutto agnostico rispetto alla tipologia e al modello di videocamera utilizzati.
 
 \subsection{Inferenza}
 Ogni frame ricevuto dal feed video viene successivamente dato in input al modello PSGTr \cite{yang2022psg} che restituisce un oggetto di tipo Detections il quale contiene i seguenti dati:
@@ -145,13 +145,13 @@ Dove:
 		\end{scope}
 
 		% Draw the x-axis vector
-		\draw[->, thick, red] (0,0,0) -- (3,0,0) node[anchor=north east]{$\mathbf{x}$};
+		\draw[->, thick, red] (0,0,0) -- (1,0.5,-2) node[anchor=south]{$\mathbf{x}$};
 
 		% Draw the y-axis vector
-		\draw[->, thick, green] (0,0,0) -- (0,-2.8,0) node[anchor=north west]{$\mathbf{y}$};
+		\draw[->, thick, green] (0,0,0) -- (-2, 0,0) node[anchor=north west]{$\mathbf{y}$};
 
 		% Draw the z-axis vector
-		\draw[->, thick, blue] (0,0,0) -- (1,0.5,-3) node[anchor=south]{$\mathbf{z}$};
+		\draw[->, thick, blue] (0,0,0) -- (0, 2, 0) node[anchor=south]{$\mathbf{z}$};
 
 		% Add labels for the origin
 		\node[] at (0,0.4,0) [below left] {\textcolor{white}{O}};
@@ -266,13 +266,159 @@ Per ogni relazione $j$, si estrae l'indice dell'oggetto sorgente $s$ e l'indice 
 	\end{algorithmic}
 \end{algorithm}
 
-
-
 \section{Aggiormento del Mappa Semantica}
-\subsection{Stanza corrente robot}
-\subsection{Proiezione del Camera Frustum}
-\subsection{Controllo della posizione degli oggetti}
-\subsection{Aggiornamento e salvataggio a DB}
+In questa sezione verrà affrontato il processo di aggiornamento della Mappa Semantica con i nuovi dati ottenuti dalla Generazione del Grafo di Scena della sezione precedente.\\
+La Mappa Semantica è una struttura dati che rappresenta l'ambiente circostante il robot e che viene aggiornata in real time per mantenere la coerenza con l'ambiente reale.\\
+Il processo di aggiornamento della Mappa Semantica è composto da 3 fasi principali:
+\begin{itemize}
+	\item Trovare la stanza corrente del robot utilizzando il Grafo delle Stanze della Mappa Semantica
+	\item Aggiornare il Grafo degli Oggetti della stanza corrente con i nuovi nodi e archi.
+	\item Aggiornare la Mappa Semantica su DB e pubblicare i nuovi risultati sul relativo topic MQTT.
+\end{itemize}
+
+\subsection{Trovare la stanza corrente del robot}
+Trovare la stanza corrente del robot è uno step necessario: permette di aggiornare il Grafo degli Oggetti della sola la stanza in cui il robot si trova, evitando di aggiornare l'intera mappa, efficientando il processo.\\
+% is_inside_polygon
+\subsubsection{Algoritmo di Ray Casting}
+Ogni nodo stanza della Mappa Semantica ha un attributo $segments$ che rappresenta i segmenti che delineano i confini della stanza fisica. \\
+Per determinare la stanza in cui si trova il robot, si utilizza l'algoritmo di Ray Casting \cite{haines_199424} che permette di determinare se un punto è all'interno di un poligono, il cui funzionamento è il seguente:
+\begin{itemize}
+	\item Si sceglie come punto di inizio $P_{start}$ del raggio un punto che sicuramente è all'esterno del poligono.
+	\item Si emette un raggio dal punto $P_{start}$ al punto $P_{check}$ che si vuole verificare se è all'interno del poligono.
+	\item Si contano quante volte il raggio interseca i segmenti del poligono:
+	      \begin{itemize}
+		      \item Se il numero è dispari, il punto è all'interno del poligono;
+		      \item Se il numero è pari, il punto è all'esterno del poligono.
+	      \end{itemize}
+\end{itemize}
+L'intuizione alla base di questo algoritmo è che se il segmento che congiunge il punto esterno e il punto $P_{check}$ interseca un numero dispari di segmenti del poligono significa che ho incontrato solo un "bordo" del poligono e quindi il punto è all'interno. Se il numero è pari, significa che ho incontrato due "bordi" e quindi sono o entrato e poi uscito dal poligono oppure nemmeno entrato.
+
+\begin{figure}[h]
+	\begin{subfigure}[b]{0.5\textwidth}
+		\centering
+		\begin{tikzpicture}
+			% Coordinate dei vertici del poligono
+			\coordinate (A) at (0, 0);
+			\coordinate (B) at (2, 3);
+			\coordinate (C) at (4, 1);
+			\coordinate (D) at (3, -2);
+			\coordinate (E) at (1, -2);
+			\coordinate (PS) at (0.5, 2);
+			\coordinate (PCI) at (2, 0);
+
+			% Disegna il poligono
+			\draw[fill=blue!20] (A) -- (B) -- (C) -- (D) -- (E) -- cycle;
+			\draw[dashed, name path=PSPCI] (PS) -- (PCI);
+			\draw[name path=AB] (A) -- (B);
+			% Etichetta i vertici
+			\node at (A) [below left] {A};
+			\node at (B) [above] {B};
+			\node at (C) [right] {C};
+			\node at (D) [below right] {D};
+			\node at (E) [below] {E};
+			\node at (PS) [above left] {$P_{start}$};
+			\node at (PCI) [below right] {$P_{check}$};
+
+			\foreach \point in {A, B, C, D, E}
+			\fill (\point) circle (2pt);
+
+			\foreach \point in {PS, PCI}
+			\fill[blue] (\point) circle (2pt);
+
+			\path[name intersections={of=PSPCI and AB, name=i}];
+			\fill[red] (i-1) circle (2pt);
+		\end{tikzpicture}
+		\caption{Punto interno}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.5\textwidth}
+		\centering
+		\begin{tikzpicture}
+			% Coordinate dei vertici del poligono
+			\coordinate (A) at (0, 0);
+			\coordinate (B) at (2, 3);
+			\coordinate (C) at (4, 1);
+			\coordinate (D) at (3, -2);
+			\coordinate (E) at (1, -2);
+			\coordinate (PS) at (0.5, 2);
+			\coordinate (PCO) at (4, -1);
+
+			% Disegna il poligono
+			\draw[fill=blue!20] (A) -- (B) -- (C) -- (D) -- (E) -- cycle;
+			\draw[dashed, name path=PSPCO] (PS) -- (PCO);
+			\draw[name path=AB] (A) -- (B);
+			\draw[name path=CD] (C) -- (D);
+			% Etichetta i vertici
+			\node at (A) [below left] {A};
+			\node at (B) [above] {B};
+			\node at (C) [right] {C};
+			\node at (D) [below right] {D};
+			\node at (E) [below] {E};
+			\node at (PS) [above left] {$P_{start}$};
+			\node at (PCO) [below right] {$P_{check}$};
+
+			\foreach \point in {A, B, C, D, E}
+			\fill (\point) circle (2pt);
+
+			\foreach \point in {PS, PCO}
+			\fill[blue] (\point) circle (2pt);
+
+			\path[name intersections={of=PSPCO and AB, name=first_i}];
+			\fill[red] (first_i-1) circle (2pt);
+			\path[name intersections={of=PSPCO and CD, name=second_i}];
+			\fill[red] (second_i-1) circle (2pt);
+
+		\end{tikzpicture}
+		\caption{Punto esterno}
+	\end{subfigure}
+\end{figure}
+
+\begin{algorithm}[h]
+	\caption{Ray Casting}
+	\begin{algorithmic}[1]
+		\Procedure{is\_inside\_polygon}{$P_{start}, P_{check}, segments$}
+		\State $intersection\_count \gets 0$
+		\For{ $i=0$ to $segments.length$}
+		\State $A \gets segments[i]$
+		\State $B \gets segments[(i+1) \% segments.length]$
+		\If{$\Call{do\_intersect}{P_{start}, P_{robot}, A, B}$}\Comment{Appendice A.2}
+		\State $intersection\_count \gets intersection\_count + 1$
+		\EndIf
+		\EndFor
+		\State \Return $intersection\_count \% 2 == 1$
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+\subsubsection{Deteminare la stanza corrente}
+
+Data la posizione del robot $P_{robot}$ nella mappa, per ogni stanza $s$ della Mappa Semantica si effettua l'algoritmo di Ray Casting sopra descritto dove:
+\begin{itemize}
+	\item $P_{start}$ viene scelto come un punto medio di un lato della bounding box con padding della stanza $s$;
+	\item $P_{check}$ è la posizione del robot nella mappa.
+\end{itemize}
+Se il punto $P_{check}$, ovvero il robot, giace all'interno del poligono della stanza $s$, allora quest'ultima è la stanza corrente. \\
+È bene notare che è impossibile che le stanze si sovrappongano, poichè sia il riconoscimento delle stanze (\textit{capitolo} \ref{chap:riconoscimento_stanze}) che la console per modificare la segmentazione effettuano un controllo per evitare questa casistica. Di conseguenza, l'algoritmo restituirà sempre una e una sola stanza.
+
+\begin{algorithm}
+	\caption{Trovare la stanza corrente}
+	\begin{algorithmic}[1]
+		\State $P_{robot} \gets \text{robot.get\_position()}$
+		\State $current\_room \gets \text{None}$
+		\For{ $s$ \textbf{in} $semantic\_map.get\_rooms()$}
+		\State $bb\_x\_min, bb\_x\_max, bb\_x\_min \gets \Call{get\_bounding\_box}{s.segments}$
+		\State $P_{start} \gets \text{[} \Call{mean}{bb\_x\_min, bb\_x\_max}, bb\_y\_min - \epsilon \text{]}$
+		\If{$\Call{is\_inside\_polygon}{P_{start}, P_{robot}, s.segments}$}
+		\State $current\_room \gets s$
+		\EndIf
+		\EndFor
+	\end{algorithmic}
+\end{algorithm}
+
+
+\subsection{Aggiornamento Grafo degli Oggetti}
+\subsubsection{Proiezione del Camera Frustum}
+\subsubsection{Controllo della posizione degli oggetti}
+\subsection{Salvataggio a DB e pubblicazione su MQTT}
 
 
 
