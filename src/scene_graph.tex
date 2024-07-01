@@ -68,7 +68,7 @@ L'oggetto MMDetResult ritornato dalla funzione di inferenza del modello, come de
 \end{algorithm}
 
 
-\paragraph{Calcolo posizioni 3D}
+\paragraph{Calcolo posizioni 3D}\label{paragraph:positions}
 Per ogni oggetto, si estrae la posizione 3D nella mappa del robot in modo che questo possa successivamente localizzarlo e raggiungerlo.
 \subparagraph{Calcolo posizione 3D nel \gls{pixel_system}}
 Le maschere generate dal modello consentono di calcolare il centroide $(x_i, y_i)$ dell'oggetto $i$-esimo. Tuttavia, queste maschere forniscono solo un valore in due dimensioni. Per il calcolo del valore $z_i$ si utilizza il \Gls{point_cloud} che, combinando il frame RGB con il frame Depth, permette di ottenere una rappresentazione 3D della scena. \\
@@ -414,9 +414,81 @@ Se il punto $P_{check}$, ovvero il robot, giace all'interno del poligono della s
 	\end{algorithmic}
 \end{algorithm}
 
-
 \subsection{Aggiornamento Grafo degli Oggetti}
+Una volta individuata la stanza corrente, si procede con l'aggiornamento del Grafo degli Oggetti della stanza corrente utilizzando i nuovi nodi e archi ottenuti dalla Generazione del Grafo di Scena.\\\\
+Poichè il modello PSGTr individua e riconosce gli oggetti in modo non deterministico,  non assegna sempre lo stesso identificativo a un oggetto nei diversi frame. Questo comportamento rende difficile tracciare gli oggetti nel tempo. Di conseguenza, non ci si può basare su questi, tantomeno delle label a causa dei possibili omonimi, per aggiornare il grafo. La soluzione proposta è molto semplice:
+\begin{itemize}
+	\item Si proietta il Camera Frustum nel sistema mappa per determinare l'area della stanza attualmente visibile dalla telecamera;
+	\item Si eliminano tutti i nodi oggetto dal Grafo degli Oggetti della stanza che giacciono all'interno del Camera Frustum e gli archi che entrano/escano da questi;
+	\item Si aggiungono i nuovi nodi e archi ottenuti dall'ultima generazione del grafo di scena che rappresenta lo stato attuale della porzione di stanza visibile.
+\end{itemize}
+
 \subsubsection{Proiezione del Camera Frustum}
+Il Camera Frustum è la porzione di spazio visibile dalla telecamera.
+\begin{figure}[h]
+	\centering
+	\tdplotsetmaincoords{110}{110}
+	\begin{tikzpicture}[tdplot_main_coords]
+		% Define the coordinates of the frustum
+		\coordinate (Camera) at (0, 0, 0);
+		\coordinate (A) at (-2, 4, -2);
+		\coordinate (B) at ( 2, 4, -2);
+		\coordinate (C) at ( 2, 4,  2);
+		\coordinate (D) at (-2, 4,  2);
+
+		\coordinate (A') at (-0.40, 0.81, -0.4);
+		\coordinate (B') at ( 0.40, 0.81, -0.4);
+		\coordinate (C') at ( 0.40, 0.81,  0.4);
+		\coordinate (D') at (-0.40, 0.81,  0.4);
+
+
+		% Draw the frustum
+		\draw[fill=green!20] (A) -- (B) -- (C) -- (D) -- cycle;
+		\draw[fill=blue!20] (A') -- (B') -- (C') -- (D') -- cycle;
+
+		\foreach \point in {A', B', C', D'}
+		\draw[dashed] (Camera) -- (\point);
+
+		\draw (A) -- (A');
+		\draw (B) -- (B');
+		\draw (C) -- (C');
+		\draw (D) -- (D');
+
+		% Draw the camera
+		\fill[red] (Camera) circle (2pt);
+		\node at (0,-0.5,0) [below] {Camera};
+
+		% Draw the labels
+		\foreach \point in {A, B, C, D, A', B', C', D'}
+		\fill (\point) circle (2pt);
+
+		\draw[->, thick, red]   (0,0,0) -- (0.6, 0,   0  ) node[anchor=north east]{$\mathbf{x}$};
+		\draw[->, thick, green] (0,0,0) -- (0,   0.6, 0  ) node[anchor=north west]{$\mathbf{y}$};
+		\draw[->, thick, blue]  (0,0,0) -- (0,   0,   0.6) node[anchor=south]{$\mathbf{z}$};
+
+	\end{tikzpicture}
+	\caption{Camera Frustum. I vertici del piano blu rappresentano la proiezione degli estremi del frame nel sistema di coordinate camera. I vertici del piano verde rappresentano la proiezione degli estremi del frame nel sistema di coordinate mappa.}
+\end{figure}\\
+Il funzionamento alla base di questo processo è molto simile a quello affrontato nella sezione \ref{paragraph:positions} per il calcolo della posizione 3D di un oggetto. I punti di partenza sono però i vertici del frame della camera e non le maschere degli oggetti. I vertici del frame dipendono dalla risoluzione della camera e sono:
+\begin{itemize}
+	\item $A = (0, 0)$
+	\item $B = (width, 0)$
+	\item $C = (width, height)$
+	\item $D = (0, height)$
+\end{itemize}
+Dove $width$ e $height$ sono rispettivamente la larghezza e l'altezza del frame.\\
+Per proiettare i vertici del frame della camera nel sistema mappa, si procede come segue:
+\begin{itemize}
+	\item Gli estremi del frame vengono aumentati con $z=1$ e moltiplicati per la Matrice Intrinseca Inversa per ottenere i vettori $\vec{a}, \vec{b}, \vec{c}, \vec{d}$ nel sistema camera;
+	\item I vettori $\vec{a}, \vec{b}, \vec{c}, \vec{d}$ vengono moltiplicati per la Matrice Estrinseca Inversa per ottenere i vettori $\vec{a'}, \vec{b'}, \vec{c'}, \vec{d'}$ nel sistema mappa.
+	\item Per ogni vettore $\vec{v}$ del punto precedente:
+	      \begin{itemize}
+		      \item Viene calcolato il vettore direzione $\vec{d}$ come il vettore differenza tra $\vec{v}$ e $P_{camera}$ normalizzato: $$\vec{d} = (\vec{v} - \overrightarrow{P_{camera}})/norm(\vec{v} - \overrightarrow{P_{camera}}) $$
+		      \item Viene calcolato il punto finale $\vec{v'}$ come la somma tra il vettore normalizzato $\vec{d}$ moltiplicato per uno scalare $distance$ e $\overrightarrow{P_{camera}}$:$$\vec{v'} = \vec{d} \cdot distance + \overrightarrow{P_{camera}}$$
+	      \end{itemize}
+\end{itemize}
+
+
 \subsubsection{Controllo della posizione degli oggetti}
 \subsection{Salvataggio a DB e pubblicazione su MQTT}
 
