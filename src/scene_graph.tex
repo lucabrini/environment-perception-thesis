@@ -441,10 +441,14 @@ Il Camera Frustum è la porzione di spazio visibile dalla telecamera.
 		\coordinate (C') at ( 0.40, 0.81,  0.4);
 		\coordinate (D') at (-0.40, 0.81,  0.4);
 
-
 		% Draw the frustum
 		\draw[fill=green!20] (A) -- (B) -- (C) -- (D) -- cycle;
 		\draw[fill=blue!20] (A') -- (B') -- (C') -- (D') -- cycle;
+
+		\node at (A) [below right] {A};
+		\node at (B) [below left] {B};
+		\node at (C) [above left] {C};
+		\node at (D) [above right] {D};
 
 		\foreach \point in {A', B', C', D'}
 		\draw[dashed] (Camera) -- (\point);
@@ -467,7 +471,7 @@ Il Camera Frustum è la porzione di spazio visibile dalla telecamera.
 		\draw[->, thick, blue]  (0,0,0) -- (0,   0,   0.6) node[anchor=south]{$\mathbf{z}$};
 
 	\end{tikzpicture}
-	\caption{Camera Frustum. I vertici del piano blu rappresentano la proiezione degli estremi del frame nel sistema di coordinate camera. I vertici del piano verde rappresentano la proiezione degli estremi del frame nel sistema di coordinate mappa.}
+	\caption{Camera Frustum. I vertici del piano verde rappresentano la proiezione degli estremi del frame nel sistema di coordinate mappa.}
 \end{figure}\\
 Il funzionamento alla base di questo processo è molto simile a quello affrontato nella sezione \ref{paragraph:positions} per il calcolo della posizione 3D di un oggetto. I punti di partenza sono però i vertici del frame della camera e non le maschere degli oggetti. I vertici del frame dipendono dalla risoluzione della camera e sono:
 \begin{itemize}
@@ -477,22 +481,265 @@ Il funzionamento alla base di questo processo è molto simile a quello affrontat
 	\item $D = (0, height)$
 \end{itemize}
 Dove $width$ e $height$ sono rispettivamente la larghezza e l'altezza del frame.\\
-Per proiettare i vertici del frame della camera nel sistema mappa, si procede come segue:
+Per proiettare i vertici del frame nel sistema mappa, si procede come segue:
 \begin{itemize}
 	\item Gli estremi del frame vengono aumentati con $z=1$ e moltiplicati per la Matrice Intrinseca Inversa per ottenere i vettori $\vec{a}, \vec{b}, \vec{c}, \vec{d}$ nel sistema camera;
 	\item I vettori $\vec{a}, \vec{b}, \vec{c}, \vec{d}$ vengono moltiplicati per la Matrice Estrinseca Inversa per ottenere i vettori $\vec{a'}, \vec{b'}, \vec{c'}, \vec{d'}$ nel sistema mappa.
 	\item Per ogni vettore $\vec{v}$ del punto precedente:
 	      \begin{itemize}
-		      \item Viene calcolato il vettore direzione $\vec{d}$ come il vettore differenza tra $\vec{v}$ e $P_{camera}$ normalizzato: $$\vec{d} = (\vec{v} - \overrightarrow{P_{camera}})/norm(\vec{v} - \overrightarrow{P_{camera}}) $$
-		      \item Viene calcolato il punto finale $\vec{v'}$ come la somma tra il vettore normalizzato $\vec{d}$ moltiplicato per uno scalare $distance$ e $\overrightarrow{P_{camera}}$:$$\vec{v'} = \vec{d} \cdot distance + \overrightarrow{P_{camera}}$$
+		      \item Viene calcolato il vettore direzione $\vec{d}$ come il vettore differenza tra $\vec{v}$ e $P_{camera}$ normalizzato:
+		            \begin{equation}
+			            \vec{d} = (\vec{v} - \overrightarrow{P_{camera}})/norm(\vec{v} - \overrightarrow{P_{camera}})
+		            \end{equation}
+		      \item Viene calcolato il punto finale $\vec{v'}$ come la somma tra il vettore normalizzato $\vec{d}$ moltiplicato per uno scalare $distance$ e $\overrightarrow{P_{camera}}$:
+		            \begin{equation}
+			            \vec{v'} = \vec{d} \cdot distance + \overrightarrow{P_{camera}}
+		            \end{equation}
 	      \end{itemize}
 \end{itemize}
-
-
+Questo processo consente di costruire un tetraedro con vertici $A'$, $B'$, $C'$, $D'$ e $P_{camera}$ che approssima il Camera Frustum nel sistema mappa che verrà utilizzato per eliminare gli oggetti del grafo che giacciono all'interno di esso in modo da poter aggiornare il grafo.
+\begin{algorithm}
+	\caption{Proiezione del Camera Frustum}
+	\begin{algorithmic}[1]
+		\Procedure{project\_camera\_frustum}{$P_{camera}, frame\_vertices$}
+		\State $map\_vertices \gets$ [ ]
+		\State $M_{ic} \gets \Call{get\_camera\_intrinsics}{}$
+		\State $M_{ec} \gets \Call{get\_camera\_extrinsics}{}$
+		\For{ $i=0$ to $frame\_vertices.length$}
+		\State $\vec{v} \gets M_{ic}^{-1} \times frame\_vertices[i]$
+		\State $\vec{v'} \gets M_{ec}^{-1} \times \vec{v}$
+		\State $\vec{d} \gets (\vec{v'} - \overrightarrow{P_{camera}})$
+		\State $\vec{d_n} \gets \vec{d} / norm(\vec{d})$
+		\State $V \gets \vec{d_n} * distance + \overrightarrow{P_{camera}}$
+		\State $map\_vertices.append(V)$
+		\EndFor
+		\State \Return $map\_vertices$
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
 \subsubsection{Controllo della posizione degli oggetti}
+Per stabilire se un oggetto giace nel frustum della camera e quindi è un oggetto da eliminare dal Grafo degli Oggetti della stanza corrente, si utilizza un algoritmo che coinvolge la costruzione dei piani del frustum e il controllo della posizione degli oggetti.
+\paragraph{Costruzione dei piani}
+Per definire un piano è necessario conoscere almeno tre punti $\vec{v_1}$,$\vec{v_2}$ e $\vec{v_3}$ in modo da poter calcolare la normale $\vec{n}$ e la distanza $d$ con segno:
+\begin{equation}
+	\begin{cases}
+		\vec{n} = (\vec{v_1} - \vec{v_2}) \times (\vec{v_3} - \vec{v_2}) \\
+		d = \vec{n} \cdot \vec{v_1} = \vec{n} \cdot \vec{v_2} = \vec{n} \cdot \vec{v_3}
+	\end{cases}
+\end{equation}
+Il verso della normale del piano dipende dall'ordine dei vertici $\vec{v_1}$,$\vec{v_2}$ e $\vec{v_3}$: se i vertici sono disposti in senso orario, la normale punta verso l'interno del tetraedro, altrimenti punta verso l'esterno.\\
+In questo processo, la normale deve necessariamente puntare verso l'interno del tetraedro.
+Per esserne certi, si calcola il prodotto scalare tra la normale del piano e un vettore che sicuramente è all'interno del tetraedro, ad esempio il centroide $\vec{c}$ del solido. Se questo meno la distanza $d$ è minore di zero, allora la normale punta verso l'esterno del tetraedro e si negano i valori di $\vec{n}$ e $d$.
+\begin{equation}
+	\vec{n}  =
+	\begin{cases}
+		\vec{n}  & \text{se } \vec{n} \cdot \vec{c} - d \geq 0 \\
+		-\vec{n} & \text{altrimenti}
+	\end{cases} \;\;
+	d        =
+	\begin{cases}
+		d  & \text{se } \vec{n} \cdot \vec{c} - d \geq 0 \\
+		-d & \text{altrimenti}
+	\end{cases}
+\end{equation}
+A supporto di queste operazioni, è stata definita una classe $Plane$ che permette di costruire un piano a partire da tre punti e di controllare se la normale punta verso l'interno del tetraedro.
+\begin{figure}[H]
+	\centering
+	\begin{tikzpicture}
+		\umlclass[x=4.3, y=0]{Plane}{
+			+ normal : Vector \\
+			+ d : float \\
+		}{
+			\tiny{$\ll$create$\gg$}\\
+			+ \umlvirt{Plane}(v1 : Vector, v2 : Vector, v3 : Vector) \\
+			+ checkNormal(center : Vector) : void \\
+			\, - changeSign() : void \\
+		}
+
+	\end{tikzpicture}
+	\caption{Classe Plane}
+\end{figure}
+I piani creati sono i seguenti:
+\begin{itemize}
+	\item Piano che passa per i vertici $\vec{d'}, \vec{c'}, \vec{b'}$;
+	\item Piano che passa per i vertici $\overrightarrow{P_{camera}}, \vec{a'}, \vec{b'}$
+	\item Piano che passa per i vertici $\overrightarrow{P_{camera}}, \vec{b'}, \vec{c'}$
+	\item Piano che passa per i vertici $\overrightarrow{P_{camera}}, \vec{c'}, \vec{d'}$
+	\item Piano che passa per i vertici $\overrightarrow{P_{camera}}, \vec{d'}, \vec{a'}$
+\end{itemize}
+
+\paragraph{Appartenenza di un punto al frustum}
+%Controllare punto p dal piano%
+Data la posizione dell'oggetto $P_i$ e i piani del camera frustum si controlla se per ognuno di questi l'oggetto giace nel sottospazio delimitato dal piano. Se l'oggetto giace nei sottospazi di tutti i piani allora l'oggetto è all'interno del frustum.\\\\
+Sia $\vec{n}=(x_n,y_n,z_n)$ la normale del piano e $d$ la distanza con segno di un punto $\vec{p}$ dal piano. Il punto $\vec{p}=(x_p,y_p,z_p)$ giace nel sottospazio delimitato dal piano se:
+\begin{equation}
+	\vec{n} \cdot \vec{p} \geq d
+\end{equation}
+Che in cardinate cartesiane diventa:
+\begin{equation}
+	x_n \cdot x_p + y_n \cdot y_p + z_n \cdot z_p \geq d
+\end{equation}
+
+\begin{algorithm}
+	\caption{Controllo appartenenza di punto al frustum}
+	\begin{algorithmic}[1]
+		\Procedure{is\_inside\_frustum}{$P_i, planes$}
+		\State $inside \gets \text{True}$
+		\For{ $i=0$ to $planes.length$}
+		\State $\vec{n} \gets planes[i].normal$
+		\State $d \gets planes[i].d$
+		\If{$\vec{n} \cdot P_i < d$}
+		\State $inside \gets \text{False}$
+		\EndIf
+		\EndFor
+		\State \Return $inside$
+		\EndProcedure
+	\end{algorithmic}
+\end{algorithm}
+
+\begin{figure}[h]
+	\begin{subfigure}[b]{0.5\textwidth}
+		\centering
+		\tdplotsetmaincoords{100}{90}
+		\begin{tikzpicture}[tdplot_main_coords]
+			% Define the coordinates of the frustum
+			\coordinate (Camera) at (0, 0, 0);
+			\coordinate (A) at (-2, 4, -2);
+			\coordinate (B) at ( 2, 4, -2);
+			\coordinate (C) at ( 2, 4,  2);
+			\coordinate (D) at (-2, 4,  2);
+
+			% Draw the frustum
+			\draw (A) -- (B) -- (C) -- (D) -- cycle;
+
+
+			% Draw the labels
+			\foreach \point in {A, B, C, D}{
+					\fill (\point) circle (2pt);
+				}
+
+			\foreach \point in {A, B, C}
+			\draw (Camera) -- (\point);
+			\draw[dashed] (Camera) -- (D);
+
+
+			% Draw the camera
+			\fill (Camera) circle (2pt);
+			\node at (0,-0.5,0) [below] {Camera};
+
+			% Draw the points
+			\coordinate (Point1) at (-1, 3, -1);
+			\coordinate (Point2) at (0, 2, 0);
+			\coordinate (Point3) at (1, 1, 1);
+			\coordinate (Point4) at (2, 0, 2);
+
+			\fill[green] (Point1) circle (2pt);
+			\fill[green] (Point2) circle (2pt);
+			\fill[red] (Point3) circle (2pt);
+			\fill[red] (Point4) circle (2pt);
+
+		\end{tikzpicture}
+		\caption{
+			Prospettiva 1
+		}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.5\textwidth}
+		\centering
+		\tdplotsetmaincoords{100}{0}
+		\begin{tikzpicture}[tdplot_main_coords]
+			% Define the coordinates of the frustum
+			\coordinate (Camera) at (0, 0, 0);
+			\coordinate (A) at (-2, 4, -2);
+			\coordinate (B) at ( 2, 4, -2);
+			\coordinate (C) at ( 2, 4,  2);
+			\coordinate (D) at (-2, 4,  2);
+
+			% Draw the frustum
+			\draw (A) -- (B) -- (C) -- (D) -- cycle;
+
+
+			% Draw the labels
+			\foreach \point in {A, B, C, D}{
+					\fill (\point) circle (2pt);
+					\draw[dashed] (Camera) -- (\point);
+				}
+
+			% Draw the camera
+			\fill (Camera) circle (2pt);
+			\node at (0.1,-0.1,0) [below right] {Camera};
+
+			% Draw the points
+			\coordinate (Point1) at (-1, 3, -1);
+			\coordinate (Point2) at (0, 2, 0);
+			\coordinate (Point3) at (1, 1, 1);
+			\coordinate (Point4) at (2, 0, 2);
+
+			\fill[green] (Point1) circle (2pt);
+			\fill[green] (Point2) circle (2pt);
+			\fill[red] (Point3) circle (2pt);
+			\fill[red] (Point4) circle (2pt);
+
+		\end{tikzpicture}
+		\caption{
+			Prospettiva 2
+		}
+	\end{subfigure}
+	\caption{
+		Controllo appartenenza di un punto al frustum. I punti verdi giacciono all'interno del frustum, i punti rossi all'esterno.
+	}
+\end{figure}
+
+\subsubsection{Aggiornamento del Grafo}
+Una volta proiettato il Camera Frustum e costruiti i piani, si procede con l'aggiornamento del Grafo degli Oggetti della stanza corrente.\\
+Per ogni nodo oggetto $i$ del Grafo degli Oggetti della stanza corrente, si controlla se giace all'interno del frustum. Se è all'interno, allora si eliminano il nodo e gli archi che entrano/escano da esso. Se è all'esterno, si mantiene il nodo e gli archi che entrano/escano da esso.\\
+Infine, si aggiungono i nuovi nodi e archi ottenuti dalla Generazione del Grafo di Scena della sezione precedente.
+
+\begin{algorithm}[H]
+	\caption{Aggiornamento del Grafo degli Oggetti}
+	\begin{algorithmic}[1]
+		\State $map\_vertices \gets \Call{project\_camera\_frustum}{P_{camera}, frame\_vertices}$
+		\State $frustum\_planes \gets \Call{create\_frustum\_planes}{P_{camera},map\_vertices}$
+		\State $room\_nodes \gets currentRoom.get\_nodes()$
+		\State $room\_edges \gets currentRoom.get\_edges()$
+
+		\State $nodes\_to\_remove \gets$ [ ] \Comment{Scelta nodi da rimuovere}
+		\For{ $i=0$ to $room\_nodes.length$}
+		\State $node \gets room\_nodes[i]$
+		\If{$\Call{is\_inside\_frustum}{node.position, frustum\_planes}$}
+		\State $nodes\_to\_remove.append(node)$
+		\EndIf
+		\EndFor
+
+		\State $edges\_to\_remove \gets$ [ ] \Comment{Scelta archi da rimuovere}
+		\For{ $i=0$ to $room\_edges.length$}
+		\State $edge \gets room\_edges[i]$
+		\If{$nodes\_to\_remove[edge.source] \textbf{or} nodes\_to\_remove[edge.target]$}
+		\State $edges\_to\_remove.append(edge)$
+		\EndIf
+		\EndFor
+
+		\For{ $i=0$ to $nodes\_to\_remove.length$} \Comment{Rimozione nodi e archi}
+		\State $currentRoom.remove\_node(nodes\_to\_remove[i])$
+		\EndFor
+		\For{ $i=0$ to $edges\_to\_remove.length$}
+		\State $currentRoom.remove\_edge(edges\_to\_remove[i])$
+		\EndFor
+
+		\State $current.add\_nodes(last\_scene\_graph.nodes)$ \Comment{Aggiunta nuovi risultati}
+		\State $current.add\_edges(last\_scene\_graph.edges)$
+	\end{algorithmic}
+\end{algorithm}
+
 \subsection{Salvataggio a DB e pubblicazione su MQTT}
-
-
+Una volta aggiornato il Grafo degli Oggetti della stanza corrente, si procede con il salvataggio della Mappa Semantica aggiornata su DB e la pubblicazione dei nuovi risultati sul relativo topic MQTT.\\
+Il salvataggio su DB è necessario per mantenere la coerenza della mappa tra le varie esecuzioni del sistema e condividere la conoscenza tra lo swarm di Robot che opera sulla stessa stanza. La pubblicazione su MQTT permette di rendere disponibili i nuovi risultati a tutti i moduli o servizi dell'architettura cloud di Robee.
 
 \section{Conclusioni}
+In questo capitolo è stata presentata la pipeline di generazione della Mappa Semantica attraverso l'utilizzo del modello PSGTr e l'aggiornamento di questa con i nuovi dati di inferenza del modello utilizzando tecniche geometriche.\\\\
+~
+Il modello PSGTr è stato scelto per la sua capacità di generare il grafo di scena in un tempo di inferenza ragionevole per applicazioni real time: richiede infatti circa $400ms$ in un cluster avente accesso a NVIDIA T4 permettendo così di aggiornare la rappresentazione semantica dell'ambiente praticamente instantaneamente.\\\\
+~
+La pipeline di aggiornamento della Mappa Semantica è semplice, efficiente ed efficace: Grazie all'utilizzo di operazioni di geometria lineare, che si traducono in moltiplicazioni e somme di numeri, è possibile aggiornare la mappa in un tempo ragionevole.\\\\
+~
+In futuro si può sperimentare introducendo modelli \cite{yang2023pvsg} che utilizzano anche il tracking degli oggetti segmentati in modo da poter tracciare gli oggetti nel tempo e aggiornare direttamente la mappa senza dover ricorrere a tecniche geometriche.
 
