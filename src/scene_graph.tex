@@ -8,7 +8,7 @@ In questo capitolo verrà affrontata la generazione del grafo di scena dato un f
 La generazione del grafo di scena è un passo fondamentale per il mantenimento della coerenza tra Mappa Semantica e Ambiente reale.\\
 Il grafo di scena è una struttura dati che rappresenta gli oggetti presenti nell'ambiente e le relazioni tra loro composto da nodi e archi. I nodi rappresentano gli oggetti, mentre gli archi rappresentano le relazioni tra gli oggetti. \\
 In questa sezione verrà affrontata la costruzione di questa struttura dati a partire da un frame RGB-D e il modello di ML utilizzato per l'inferenza degli oggetti e delle relazioni.
-\subsection{Lettura del frame RGB-D}
+\subsection{Lettura dei frame RGB-D}
 All'interno dell'architettura cloud-native di Robee vi è la presenza di un pod chiamato "Streaming Module" il cui compito è streammare il feed video delle camera sul pod redis del robot, in modo che gli altri servizi o moduli possano accedere a questi dati tramite l'utilizzo di librerie wrapper, rendendo il tutto agnostico rispetto alla tipologia e al modello di videocamera utilizzati.
 
 \subsection{Inferenza}
@@ -733,6 +733,136 @@ Infine, si aggiungono i nuovi nodi e archi ottenuti dalla Generazione del Grafo 
 \subsection{Salvataggio a DB e pubblicazione su MQTT}
 Una volta aggiornato il Grafo degli Oggetti della stanza corrente, si procede con il salvataggio della Mappa Semantica aggiornata su DB e la pubblicazione dei nuovi risultati sul relativo topic MQTT.\\
 Il salvataggio su DB è necessario per mantenere la coerenza della mappa tra le varie esecuzioni del sistema e condividere la conoscenza tra lo swarm di Robot che opera sulla stessa stanza. La pubblicazione su MQTT permette di rendere disponibili i nuovi risultati a tutti i moduli o servizi dell'architettura cloud di Robee.
+
+\subsection{Esempio di funzionamento}
+Per chiarire il funzionamento dell'algoritmo, si consideri la seguente stanza, un ufficio, con i relativi oggetti:
+\begin{itemize}
+	\item Tavolo
+	\item Laptop
+	\item Pianta
+	\item Sedia
+	\item Bottiglia
+	\item Scatolone
+\end{itemize}
+Assumiamo che la Mappa Semantica sia già stata inizialmente generata e che quindi sia presente un nodo stanza \textit{ufficio} con i relativi attributi e un Grafo degli Oggetti che inizialmente è vuoto. Il robot, muovendosi all'interno della stanza, rileva i vari oggetti e integra nuova conoscenza seguendo il flusso di lavoro descritto in questo capitolo.\\\\
+Nelle seguenti figure, si mostrano l'ambiente e le regioni della stanza attualmente visibili dal robot sulla sinistra e l'evoluzione della Mappa Semantica sulla destra.~
+\begin{figure}[H]
+	\begin{subfigure}[t]{0.45\textwidth}
+		\centering
+		\includegraphics*[width=\textwidth]{commons/scene_table.png}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.55\textwidth}
+		\centering
+		\begin{tikzpicture}[
+			>={Stealth[round]},  % Arrow tip
+			auto,
+			thick  % Line thickness
+			]
+			\node (a) [circle, draw, scale=0.8, fill=green!20] {Ufficio};
+
+			\begin{scope}[node distance=1.2cm and 0.62cm]
+				\node (i) [circle, draw, scale=0.7, above=of a] {Floor};
+			\end{scope}
+
+			\begin{scope}[node distance=1.2cm and 0.62cm]
+				\node (d) [circle, draw, scale=0.7, below=of a] {Table};
+				\node (b) [circle, draw, scale=0.7, left=of d] {Laptop};
+				\node (c) [circle, draw, scale=0.7, left=of b] {Plant};
+				\node (e) [circle, draw, scale=0.7, right=of d] {Chair};
+				\node (f) [circle, draw, scale=0.7, right=of e] {Bottle};
+			\end{scope}
+
+			\foreach \node in {b,c,d,e,f,i}
+			\draw[<->] (a) -- (\node);
+
+			\draw[->] (c) to [bend right=40] node[midway, below] {\tiny{on}} (d);
+			\draw[->] (f) to [bend left=40] node[midway, below] {\tiny{on}} (d);
+			\draw[->] (b) to [bend right=20] node[midway, below] {\tiny{on}} (d);
+			\draw[->] (c) to [bend right=20] node[midway, below] {\tiny{near}} (b);
+			\draw[->] (e) to [bend left=20] node[midway, below] {\tiny{near}} (d);
+			\draw[->] (d) to [bend left=20] node[midway, above] {\tiny{near}} (e);
+		\end{tikzpicture}
+	\end{subfigure}
+\end{figure}~
+\begin{figure}[H]
+	\begin{subfigure}[t]{0.45\textwidth}
+		\centering
+		\includegraphics*[width=\textwidth]{commons/scene_box.png}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.55\textwidth}
+		\centering
+		\begin{tikzpicture}[
+			>={Stealth[round]},  % Arrow tip
+			auto,
+			thick  % Line thickness
+			]
+			\node (a) [circle, draw, scale=0.8, fill=green!20] {Ufficio};
+
+			\begin{scope}[node distance=1.2cm and 0.62cm]
+				\node (g) [circle, draw, scale=0.7, above=of a] {Box};
+				\node (h) [circle, draw, scale=0.7, right=of g, fill=blue!20] {Tag};
+				\node (i) [circle, draw, scale=0.7, left=of g] {Floor};
+			\end{scope}
+
+			\begin{scope}[node distance=1.2cm and 0.62cm]
+				\node (d) [circle, draw, scale=0.7, below=of a] {Table};
+				\node (b) [circle, draw, scale=0.7, left=of d] {Laptop};
+				\node (c) [circle, draw, scale=0.7, left=of b] {Plant};
+				\node (e) [circle, draw, scale=0.7, right=of d] {Chair};
+				\node (f) [circle, draw, scale=0.7, right=of e] {Bottle};
+			\end{scope}
+
+			\foreach \node in {b,c,d,e,f,g,h,i}
+			\draw[<->] (a) -- (\node);
+
+			\draw[->] (c) to [bend right=40] node[midway, below] {\tiny{on}} (d);
+			\draw[->] (f) to [bend left=40] node[midway, below] {\tiny{on}} (d);
+			\draw[->] (b) to [bend right=20] node[midway, below] {\tiny{on}} (d);
+			\draw[->] (c) to [bend right=20] node[midway, below] {\tiny{near}} (b);
+			\draw[->] (e) to [bend left=20] node[midway, below] {\tiny{near}} (d);
+			\draw[->] (d) to [bend left=20] node[midway, above] {\tiny{near}} (e);
+			\draw[->] (g) to [bend right=20] node[midway, above] {\tiny{on}} (i);
+		\end{tikzpicture}
+	\end{subfigure}
+\end{figure}~
+Nel seguente step, il robot ruota nella posizione iniziale dove la scena è cambiata. Tutti gli oggetti della Mappa Semantica che cadevano all'interno del frustum vengono rimossi e i nuovi oggetti rilevati, che in questo caso sono la sedia, il tavolo e la bottiglia, vengono aggiunti.
+
+\begin{figure}[H]
+	\begin{subfigure}[t]{0.45\textwidth}
+		\centering
+		\includegraphics*[width=\textwidth]{commons/scene_table_bottle.png}
+	\end{subfigure}
+	\begin{subfigure}[t]{0.55\textwidth}
+		\centering
+		\begin{tikzpicture}[
+			>={Stealth[round]},  % Arrow tip
+			auto,
+			thick  % Line thickness
+			]
+			\node (a) [circle, draw, scale=0.8, fill=green!20] {Ufficio};
+
+			\begin{scope}[node distance=1.2cm and 0.62cm]
+				\node (g) [circle, draw, scale=0.7, above=of a] {Box};
+				\node (h) [circle, draw, scale=0.7, right=of g, fill=blue!20] {Tag};
+				\node (i) [circle, draw, scale=0.7, left=of g] {Floor};
+			\end{scope}
+
+			\begin{scope}[node distance=1cm and 0.62cm]
+				\node (e) [circle, draw, scale=0.7, below=of a] {Chair};
+				\node (d) [circle, draw, scale=0.7, left=of e] {Table};
+				\node (f) [circle, draw, scale=0.7, right=of e] {Bottle};
+			\end{scope}
+
+			\foreach \node in {d,e,f,g,h,i}
+			\draw[<->] (a) -- (\node);
+
+			\draw[->] (f) to [bend left=40] node[midway, below] {\tiny{on}} (d);
+			\draw[->] (e) to [bend left=20] node[midway, below] {\tiny{near}} (d);
+			\draw[->] (d) to [bend left=20] node[midway, above] {\tiny{near}} (e);
+			\draw[->] (g) to [bend right=20] node[midway, above] {\tiny{on}} (i);
+		\end{tikzpicture}
+	\end{subfigure}
+\end{figure}
 
 \section{Conclusioni}
 In questo capitolo è stata presentata la pipeline di generazione della Mappa Semantica attraverso l'utilizzo del modello PSGTr e l'aggiornamento di questa con i nuovi dati di inferenza del modello utilizzando tecniche geometriche.\\\\

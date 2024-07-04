@@ -10,19 +10,64 @@ La Mappa Semantica è un grafo orientato $G_m = (V_m, E_m)$ che rappresenta ques
 % Riscrivere le liste dal punto di vista dei nodi
 \begin{itemize}
   \item Un nodo può essere un:
-  \begin{itemize}
-    \item Nodo stanza;
-    \item Nodo oggetto;
-    \item Nodo tag.
-  \end{itemize}
+        \begin{itemize}
+          \item Nodo stanza;
+          \item Nodo oggetto;
+          \item Nodo tag.
+        \end{itemize}
   \item Un arco può rappresentare:
-  \begin{itemize}
-    \item La relazione tra due oggetti;
-    \item Il collegamento tra due stanze;
-    \item L'appartenenza di un oggetto o un tag ad una ed una sola stanza.
-  \end{itemize}
+        \begin{itemize}
+          \item La relazione tra due oggetti;
+          \item Il collegamento tra due stanze;
+          \item L'appartenenza di un oggetto o un tag ad una ed una sola stanza.
+        \end{itemize}
 \end{itemize}
-Di conseguenza, per trovare gli oggetti o i nodi appartenenti ad una stanza $s$ è sufficiente considerare il sottografo del nodo stanza $s$
+Di conseguenza, per trovare gli oggetti o i nodi appartenenti ad una stanza $s$ è sufficiente considerare il sottografo del nodo stanza $s$.
+
+\begin{figure}[h]
+  \begin{subfigure}[t]{0.45\textwidth}
+    \centering
+    \includegraphics[width=0.98\textwidth]{commons/scene_all.png}
+    \caption{Ambiente circostante il robot \textit{(posizionato in alto a destra)}}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.55\textwidth}
+    \centering
+    \begin{tikzpicture}[
+      >={Stealth[round]},  % Arrow tip
+      auto,
+      thick  % Line thickness
+      ]
+      \node (a) [circle, draw, scale=0.8, fill=green!20] {Ufficio};
+
+      \begin{scope}[node distance=1.2cm and 0.62cm]
+        \node (g) [circle, draw, scale=0.7, above=of a] {Box};
+        \node (h) [circle, draw, scale=0.7, right=of g, fill=blue!20] {Tag};
+        \node (i) [circle, draw, scale=0.7, left=of g] {Floor};
+      \end{scope}
+
+      \begin{scope}[node distance=1.2cm and 0.62cm]
+        \node (d) [circle, draw, scale=0.7, below=of a] {Table};
+        \node (b) [circle, draw, scale=0.7, left=of d] {Laptop};
+        \node (c) [circle, draw, scale=0.7, left=of b] {Plant};
+        \node (e) [circle, draw, scale=0.7, right=of d] {Chair};
+        \node (f) [circle, draw, scale=0.7, right=of e] {Bottle};
+      \end{scope}
+
+      \foreach \node in {b,c,d,e,f,g,h,i}
+      \draw[<->] (a) -- (\node);
+
+      \draw[->] (c) to [bend right=40] node[midway, below] {\tiny{on}} (d);
+      \draw[->] (f) to [bend left=40] node[midway, below] {\tiny{on}} (d);
+      \draw[->] (b) to [bend right=20] node[midway, below] {\tiny{on}} (d);
+      \draw[->] (c) to [bend right=20] node[midway, below] {\tiny{near}} (b);
+      \draw[->] (e) to [bend left=20] node[midway, below] {\tiny{near}} (d);
+      \draw[->] (d) to [bend left=20] node[midway, above] {\tiny{near}} (e);
+      \draw[->] (g) to [bend right=20] node[midway, above] {\tiny{on}} (i);
+    \end{tikzpicture}
+    \caption{In verde in nodi stanza, in blu i nodi tag e in bianco i nodi oggetto.}
+  \end{subfigure}
+  \caption{Ambiente e relativa mappa semantica. }
+\end{figure}
 
 \subsection{Nodi}
 \subsubsection{Nodi oggetto}
@@ -34,11 +79,11 @@ I nodi oggetto rappresentano gli oggetti riconosciuti all'interno dell'ambiente 
   \item Posizione: terna $(x, y, z)$ rappresentante la posizione dell'oggetto all'interno dell'ambiente rispetto alla Reference Posizione;
   \item Reference Posizione: origine del sistema di riferimento delle posizioni degli oggetti. Può essere l'origine del sistema Mappa o l'origine del sistema Robot;
   \item Tipo: rappresenta la tipologia dell'oggetto che può essere scelta tra:
-  \begin{itemize}
-    \item Pickable: qualora l'oggetto possa essere preso attraverso gli end effectors del robot;
-    \item Non Pickable: qualora l'oggetto non possa essere preso attraverso gli end effectors del robot;
-    \item Asset: in tutti gli altri casi \textit{(Per esempio un tavolo)}.
-  \end{itemize}
+        \begin{itemize}
+          \item Pickable: qualora l'oggetto possa essere preso attraverso gli end effectors del robot;
+          \item Non Pickable: qualora l'oggetto non possa essere preso attraverso gli end effectors del robot;
+          \item Asset: in tutti gli altri casi \textit{(Per esempio un tavolo)}.
+        \end{itemize}
 \end{itemize}
 I nodi oggetto vengono aggiornati con le inferenze di nuovi frame video: possono dunque essere eliminati dalla mappa semantica qualora un oggetto non si presenti più all'interno della scena oppure aggiornati, per esempio a livello di posizione, qualora l'oggetto venga spostato.
 
@@ -77,7 +122,7 @@ I nodi tag sono permanenti all'interno della mappa semantica perché si assume c
 \end{figure}
 
 \subsubsection{Nodi stanza}
-I nodi stanza rappresentano un'area semantica all'interno della mappa slam generata attraverso i sensori LiDaR del robot che, data in input ad un algormito, questo individua le stanze e ne genera il poligono. 
+I nodi stanza rappresentano un'area semantica all'interno della mappa slam generata attraverso i sensori LiDaR del robot che, data in input ad un algormito, questo individua le stanze e ne genera il poligono.
 Ogni nodo stanza ha i seguenti attributi:
 \begin{itemize}
   \item Identificativo: utilizzato per identificare la stanza all'interno della Mappa Semantica;
@@ -130,31 +175,31 @@ Una versione grezza del grafo degli oggetti viene generata dal modello PSGTr di 
 \subsection{Esempio di Mappa Semantica}
 Di seguito un esempio di mappa semantica e i vari sottografi.
 
-\begin{figure}[h]
+\begin{figure}[H]
   \begin{tikzpicture}[
     >={Stealth[round]},  % Arrow tip
     auto,
-    node distance=3.5cm,  % Distance between nodes
+    node distance=2cm,  % Distance between nodes
     thick  % Line thickness
-  ]
-    \node (a) [circle, draw] {Cucina};
-    \node (b) [circle, draw, right of=a] {Salotto};
-    \node (c) [circle, draw, right of=b] {Ingresso};
+    ]
+    \node (a) [circle, draw, fill=green!20] {Cucina};
+    \node (b) [circle, draw, right =of a, fill=green!20 ] {Salotto};
+    \node (c) [circle, draw, right =of b, fill=green!20] {Ingresso};
 
-    \node (d) [circle, draw, below of=a, left of=a] {Bottiglia};
-    \node (e) [circle, draw, right of=d] {Tavolo};
+    \node (e) [circle, draw, below=of a] {Tavolo};
+    \node (d) [circle, draw, left=of e] {Bottiglia};
 
-    \node (f) [circle, draw, below of=b] {Persona};
-    \node (g) [circle, draw, right of=f] {Laptop};
+    \node (f) [circle, draw, below =of b] {Persona};
+    \node (g) [circle, draw, right =of f] {Laptop};
 
     \draw[<->] (a) -- (b);
     \draw[<->] (c) -- (b);
-    
+
     \draw[->] (d) to [bend left=20] node[midway, above] {on} (e);
     \draw[->] (e) to [bend left=20] node[midway, below] {under} (d);
     \draw[<->] (a) -- (d);
     \draw[<->] (a) -- (e);
-    
+
     \draw[->] (f) to [bend left=20] node[midway, above] {looking at} (g);
     \draw[->] (g) to [bend left=20] node[midway, below] {standing on} (f);
     \draw[<->] (b) -- (f);
@@ -162,8 +207,7 @@ Di seguito un esempio di mappa semantica e i vari sottografi.
   \end{tikzpicture}
   \caption{Mappa Semantica}
 \end{figure}
-
-\begin{figure}[h]
+\begin{figure}[H]
   \begin{subfigure}[b]{0.32\textwidth}
     \centering
     \begin{tikzpicture}[
@@ -171,15 +215,15 @@ Di seguito un esempio di mappa semantica e i vari sottografi.
       auto,
       node distance=3.5cm,  % Distance between nodes
       thick  % Line thickness
-    ]
-      \node (a) [circle, draw] {Cucina};
-      \node (b) [circle, draw, right of=a] {Salotto};
-      \node (c) [circle, draw, right of=b] {Ingresso};
+      ]
+      \node (a) [circle, draw, fill=green!20] {Cucina};
+      \node (b) [circle, draw, right =of a, fill=green!20] {Salotto};
+      \node (c) [circle, draw, right =of b, fill=green!20] {Ingresso};
 
       \draw[<->] (a) -- (b);
       \draw[<->] (c) -- (b);
     \end{tikzpicture}
-  \caption{Grafo delle stanze}
+    \caption{Grafo delle stanze}
   \end{subfigure}
 
   \begin{subfigure}[b]{.5\textwidth}
@@ -187,12 +231,12 @@ Di seguito un esempio di mappa semantica e i vari sottografi.
     \begin{tikzpicture}[
       >={Stealth[round]},  % Arrow tip
       auto,
-      node distance=3.5cm,  % Distance between nodes
+      node distance=2cm,  % Distance between nodes
       thick  % Line thickness
-    ]
-      \node (d) [circle, draw, below of=a, left of=a] {Bottiglia};
-      \node (e) [circle, draw, right of=d] {Tavolo};
-  
+      ]
+      \node (d) [circle, draw, below =of a, left =of a] {Bottiglia};
+      \node (e) [circle, draw, right =of d] {Tavolo};
+
       \draw[->] (d) to [bend left=20] node[midway, above] {on} (e);
       \draw[->] (e) to [bend left=20] node[midway, below] {under} (d);
     \end{tikzpicture}
@@ -203,12 +247,12 @@ Di seguito un esempio di mappa semantica e i vari sottografi.
     \begin{tikzpicture}[
       >={Stealth[round]},  % Arrow tip
       auto,
-      node distance=3.5cm,  % Distance between nodes
+      node distance=2cm,  % Distance between nodes
       thick  % Line thickness
-    ]
-      \node (f) [circle, draw, below of=b] {Persona};
-      \node (g) [circle, draw, right of=f] {Laptop};
-  
+      ]
+      \node (f) [circle, draw, below =of b] {Persona};
+      \node (g) [circle, draw, right =of f] {Laptop};
+
       \draw[->] (f) to [bend left=20] node[midway, above] {looking at} (g);
       \draw[->] (g) to [bend left=20] node[midway, below] {standing on} (f);
     \end{tikzpicture}
