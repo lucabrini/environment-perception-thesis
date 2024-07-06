@@ -64,6 +64,20 @@ class RoomSegmentationJob:
         self.occupied_space_image = self.preprocess_occupied_space_image()
         
         segments_list = self.analyze_free_space()
+        # PLOT
+        bg = cv.cvtColor(self.free_space_image, cv.COLOR_GRAY2RGB)
+        bg[self.free_space_skeleton == 255] = [0, 0, 255]
+        for segment in segments_list:
+            cv.line(bg, (segment.intersection_points[0][0], segment.intersection_points[0][1]),
+                    (segment.intersection_points[1][0], segment.intersection_points[1][1]), (0, 255, 0), 1)
+            cv.circle(bg, (segment.intersection_points[0][0], segment.intersection_points[0][1]), 2, (0, 255, 0), -1)
+            cv.circle(bg, (segment.intersection_points[1][0], segment.intersection_points[1][1]), 2, (0, 255, 0), -1)
+           
+            bg[segment.mask == 255] = [255, 0, 0]
+            cv.circle(bg, (int(segment.centroid[0]), int(segment.centroid[1])), 2, (255, 0, 0), -1)
+            
+        plot_image(bg, "segments_and_intersections_lines")
+        # PLOT
         endpoints, endpoints_coords, threshold = self.analyze_occupied_space()
 
         # Find door locations
@@ -128,8 +142,11 @@ class RoomSegmentationJob:
         self.free_space_skeleton = self.free_space_skeleton - np.bitwise_and(self.free_space_skeleton, branching_points)
 
         # Find branches
-        return RoomSegmentationUtils.filter_small_branches(self.free_space_skeleton, area_threshold)
-
+        branches_num, branches_labels = RoomSegmentationUtils.filter_small_branches(self.free_space_skeleton, area_threshold)
+        self.free_space_skeleton = np.zeros_like(self.free_space_skeleton)
+        self.free_space_skeleton[branches_labels > 0] = 255
+        return branches_num, branches_labels
+        
     def analyze_free_space(self, area_threshold=10):
         branches_num, branches_labels = self.voronoi_free_space()
         # Compute distance transform
@@ -289,6 +306,15 @@ class RoomSegmentationUtils:
         t8 = np.rot90(t6)
 
         kernels = [t1, t2, t3, t4, t5, t6, t7, t8]
+        
+        fig, axs = plt.subplots(1, 8)
+        for i, ax in enumerate(axs):
+            ax.set_xticks([])
+            ax.set_yticks([])
+            ax.imshow(kernels[i], cmap='gray')
+
+        fig.savefig("endpoints_kernels.png", dpi=300, bbox_inches='tight', pad_inches=0.1)
+        plt.show()
         results = np.zeros(skeleton.shape[:2], dtype=int)
         for kernel in kernels:
             results = np.logical_or(cv.morphologyEx(skeleton, op=cv.MORPH_HITMISS, kernel=kernel,
@@ -343,9 +369,6 @@ class RoomSegmentationUtils:
                                            branch_pts_img)
 
         branch_pts_img = branch_pts_img.astype(np.uint8) * 255
-        bg = np.zeros((skeleton.shape[0], skeleton.shape[1], 1), dtype=np.uint8)
-        bg[branch_pts_img == 255] = 255
-        plot_image(bg, "branch_points")
         
         # Dilating the image to make the points more visible
         skel = cv.getStructuringElement(cv.MORPH_ELLIPSE, (3, 3)) * 255

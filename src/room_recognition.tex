@@ -145,7 +145,7 @@ Viene applicato un processo di dilatazione con un elemento strutturante quadrato
 \end{figure}
 
 \subsection{Analisi dello spazio libero}
-L'obiettivo di questa fase è quello di individuare i punti critici che teoricamente giacciono in corrispondenza dei passaggi stretti.
+L'obiettivo di questa fase è quello di individuare i punti critici e le linee critiche che giacciono in corrispondenza dei passaggi stretti.
 
 \subsubsection{Diagramma di Voronoi}
 Innanzitutto si procede con il determinare il diagramma di Voronoi dello spazio libero. Nel paper originale viene utilizzato lo scheletro della mappa binaria come approssimazione di Voronoi. In questo lavoro, viene invece utilizzata la trasformata asse mediano poichè si è notato che fornisce risultati migliori.
@@ -212,6 +212,7 @@ In particolare, se la retta passante per i due punti non è verticale, si calcol
 È bene notare che il sistema di riferimento delle immagini è invertito rispetto a quello classico, con l'asse y che cresce verso il basso. Di conseguenza, la funzione $\arctan$ di $numpy$ restituisce i valori diversi da quelli che si aspetterebbe. \\
 Per esempio, nella figura sottostante, numpy restituisce l'algolo $\alpha$ invece di $\beta$. Per ovviare a questo problema, l'angolo finale viene calcolato come $\theta = \pi - \alpha$.
 \begin{figure}[H]
+  \centering
   \begin{tikzpicture}
     % Draw x and y axes
     \draw[->] (0.3,0) -- (7,0) node[right] {$x$};
@@ -241,7 +242,7 @@ Per esempio, nella figura sottostante, numpy restituisce l'algolo $\alpha$ invec
     \foreach \point in {a,b}
     \fill [black,opacity=1] (\point) circle (2pt);
   \end{tikzpicture}
-  \caption {Calcolo dell'orientamento del segmento}
+  \caption {Calcolo dell'orientamento del segmento. I quadrati in blu rappresentano i pixel del segmento}
 \end{figure}
 \noindent
 Inoltre, $\alpha$ è positivo in verso orario e negativo in verso antiorario. In quest'ultimo caso, l'angolo finale viene calcolato come $\theta = -\alpha$.
@@ -252,11 +253,69 @@ Inoltre, $\alpha$ è positivo in verso orario e negativo in verso antiorario. In
   \end{cases}
 \end{equation}
 \subsubsection{Ricerca degli intersection points}
+Un intersection point è definito come il punto nello spazio occupato più vicino al centroide di un segmento lungo la direzione perpendicolare all'orientamento del segmento.\\
+A supporto dell'inviduazione degli intersection points, si utilizza la trasformata distanza per determinare di quanto scalare il vettore perpendicolare al segmento per trovare il punto più vicino nello spazio occupato. Gli intersection points vengono dunque calcolati come:
+\begin{equation}
+  ip_1 =
+  \begin{bmatrix}
+    x_{\text{centroid}} \\
+    y_{\text{centroid}}
+  \end{bmatrix} +
+  \begin{bmatrix}
+    \cos(\theta + \frac{\pi}{2}) \\
+    \sin(\theta + \frac{\pi}{2})
+  \end{bmatrix} \cdot \text{dist}(x_{\text{centroid}}, y_{\text{centroid}})\\
+\end{equation}
+\begin{equation}
+  ip_2 =
+  \begin{bmatrix}
+    x_{\text{centroid}} \\
+    y_{\text{centroid}}
+  \end{bmatrix} +
+  \begin{bmatrix}
+    \cos(\theta - \frac{\pi}{2}) \\
+    \sin(\theta - \frac{\pi}{2})
+  \end{bmatrix} \cdot \text{dist}(x_{\text{centroid}}, y_{\text{centroid}})
+\end{equation}
+Per ogni segmento si determinano quindi gli intersection points i quali delimitano una possibile linea critica tra due regioni.
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{room_recognition/mora/segments_and_intersections_lines.png}
+  \caption{Segmenti e intersection points. In rosso i segmenti, in verde le linee critiche delimitate dagli intersection points, in blu il diagramma di Voronoi}
+\end{figure}
 \subsection{Analisi dello spazio occupato}
-Voronoi, trasformata skeleton
-\subsubsection{Ricerca degli endpoints}
+L'obiettivo di questa fase è quello di individuare i cosidetti endpoints, ovvero i punti che delimitano i rami del diagramma di Voronoi dello spazio occupato. Questi punti sono utili per scremare dalle linee critiche quelle che non sono effettivamente delle porte, come verrà illustrato nella sezione successiva
+\subsubsection{Diagramma di Voronoi}
+Così come per lo spazio libero, anche per lo spazio occupato viene determinato il diagramma di Voronoi approssimato alla trasformata asse mediano. Si ottiene dunque una foresta di diagramma di Voronoi ognuno dei quali corrisponde ad una zona occupata diversa. \\
+I diagrammi con meno di 20 pixels vengono scartati, in modo da rimuovere i diagrammi relativi le piccole zone che normalmente corrispondono a errori di mappattura dovuti al rumore.
 
+\begin{figure}
+  \centering
+  \begin{subfigure}[t]{0.45\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{room_recognition/mora/occupied_space_voronoi.png}
+    \caption{Diagramma di Voronoi dello spazio occupato}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.45\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{room_recognition/mora/occupied_space_diagram_labeling.png}
+    \caption{Labeling delle componenti connesse di (a)}
+  \end{subfigure}
+\end{figure}
+
+\subsubsection{Ricerca degli endpoints}
+I diagrammi di voronoi estratti dallo spazio occupato sono utili per la ricerca delle protuberanze presenti vicino alle porte. Queste protuberanze sono individuate come endpoints, localizzati attraverso l'utilizzo della trasformata HIT or MISS con i kernels 3x3 seguenti:
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.9\textwidth]{room_recognition/mora/endpoints_kernels.png}
+  \caption{In nero i valori -1, in grigio i valori 0 e in bianco i valori 1 dei kernels}
+\end{figure}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{room_recognition/mora/occupied_space_diagram_endpoints.png}
+  \caption{Diagramma di Voronoi dello spazio occupato con gli endpoints evidenziati in rosso}
+\end{figure}
 \subsection{Ricerca delle porte}
 
 \subsection{Generazione Grafo delle Stanze}
