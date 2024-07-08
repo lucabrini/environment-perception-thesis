@@ -317,9 +317,189 @@ I diagrammi di voronoi estratti dallo spazio occupato sono utili per la ricerca 
   \caption{Diagramma di Voronoi dello spazio occupato con gli endpoints evidenziati in rosso}
 \end{figure}
 \subsection{Ricerca delle porte}
+Le porte sono definite come passaggi stretti nello spazio libero dove vi è la presenza di protuberanze dello spazio occupato.\\
+Utilizzando entrambe le tipologie di informazioni estrapolate negli step precedenti, è possibile individuare in modo abbastanza preciso le linee critiche che effettivamente dividono due stanze. \\\\
+Il primo passo è quello di individuare, per ciascuno intersection point dello spazio libero, l'endpoint dello spazio occupato più vicino. Unendo gli endpoint $ce1, ce2$ più vicini rispettivamente al primo e al secondo intersection point, si ottiene un'ulteriore linea $\overline{ce_1ce_2}$.\\
+
+Infine, se:
+\begin{itemize}
+  \item $distance(ip_1, ce_1) \leq \frac{threshold}{2}$
+  \item $distance(ip_2, ce_2) \leq \frac{threshold}{2}$
+  \item $distance(ip_{centroid}, ce_{centroid}) \leq threshold$
+\end{itemize}
+e il segmento $\overline{ip_1ip_2}$ non interseca alcun diagramma di Voronoi dello spazio occupato, allora questo raprpesenta una door location valida.\\\\
+Il vantaggio di questa approccio è che la soglia \textit{threshold} non è fissa: rappresenta infatti ma viene calcolata per ogni mappa come la media dei valori della trasformata distanza dello spazio occupato nei punti dove è presente il suo diagramma di Voronoi, moltiplicata per due.
+\begin{figure}
+  \centering
+  \begin{subfigure}[t]{0.45\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{room_recognition/mora/segments_intersection_closest_endpoints.png}
+    \caption{Segmenti, intersection points e endpoints. In giallo i segmenti che congiungono gli endpoints più vicini}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.45\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{room_recognition/mora/segments_valid_doors.png}
+    \caption{Segmenti, intersection points e endpoints che soddisfano le condizioni e quindi sono elegibili come porte}
+  \end{subfigure}
+\end{figure}
+\subsection{Separazione delle stanze}
+Si procede infine con la separazione delle stanze. Per ogni segmento in prossimità di una porta valida, si crea la maschera della linea critica che viene sottratta alla maschera dello spazio libero. Successivamente si esegue il labeling delle componenti connesse, e dopo aver filtrato le stanze con area inferiore a trenta pixels, si ottengono le stanze separate.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.45\textwidth]{room_recognition/mora/rooms.png}
+  \caption{Stanze separate}
+\end{figure}
+Come si può notare, ci sono delle incorrettezze. Tuttavia, queste possono essere corrette con l'ausilio dell'utente, come verrà illustrato nella sezione successiva.
 
 \subsection{Generazione Grafo delle Stanze}
+Il grafo delle stanze viene generato a partire dalle stanze separate e dai segmenti validi.\\\\
+Viene creato un nodo per ogni stanza individuata. La lista di segmenti rappresentante il perimetro della stanza viene determinata approssimando il contorno della maschera della stanza con l'algoritmo di Ramer–Douglas–Peucker implementato in OpenCV.\\
+Per ogni segmento valido, si controlla la label di appartenenza degli estremi del segmento che teoricamente giacciono in due stanze diverse, e si crea un arco tra i due nodi delle stanze corrispondenti. \\
+Infine se eliminano i nodi che non sono connessi a nessun arco, rimuovendo così le stanze isolate che per definizione non dovrebbero esistere.
+\begin{figure}[H]
+  \centering
+  \begin{tikzpicture}[
+    >={Stealth[round]},  % Arrow tip
+    auto,
+    thick  % Line thickness
+    ]
+    \node (a) [circle, draw, scale=0.8, fill=teal!20] {Stanza 1};
+    \node (fake) [above=of a]{};
+    \node (b) [circle, draw, scale=0.8, fill=green!20, left=of fake] {Stanza 2};
+    \node (c) [circle, draw, scale=0.8, fill=yellow!20, right=of fake] {Stanza 3};
+    \node (d) [circle, draw, scale=0.8, fill=orange!20, below=of c] {Stanza 4};
+    \node (e) [circle, draw, scale=0.8, fill=magenta!20, below=of b] {Stanza 5};
+    \node (f) [circle, draw, scale=0.8, fill=red!20, left=of e] {Stanza 6};
+    \node (g) [circle, draw, scale=0.8, fill=blue!20, below=e] {Stanza 7};
+    \node (h) [circle, draw, scale=0.8, fill=purple!20, below=of d] {Stanza 8};
 
+    \draw [<->] (a) -- (b);
+    \draw [<->] (a) -- (c);
+    \draw [<->] (a) -- (d);
+    \draw [<->] (a) -- (e);
+    \draw [<->] (f) -- (e);
+    \draw [<->] (a) -- (g);
+    \draw [<->] (a) -- (h);
+  \end{tikzpicture}
+  \caption{Grafo delle stanze generato a partire dalle stanze separate}
+\end{figure}
 \section{Visualizzazione e Modifica delle Stanze}
+Affinchè l'utente possa visualizzare i risultati del riconoscimento e modificare la divisione in stanze aggiugendone di nuove, eliminandone o modificandone di esistenti, è stato sviluppato un tool grafico all'interno della webapp già esistente per la gestione di Robee, la cosidetta \textit{console}. Il funzionamento della console esula dagli obiettivi di questa tesi, tuttavia è importante illustrare come è stata integrata la funzionalità di visualizzazione e modifica delle stanze all'interno di essa.
+\subsection{Layers e modelli}
+A supporto di tale feature sono stati creati dei modelli per rappresentare un generico \textit{layer} della mappa, anche in vista di futuri sviluppi, composto da una lista di \textit{layer area} che rappresentano delle zone all'interno della mappa. Infine la classe \textit{layer area outline} rappresenta il contorno di una layer area.
+\begin{figure}[H]
+  \centering
+  \scalebox{0.84}{
+    \begin{tikzpicture}
+      \umlclass[x=5, y=0]{Layer}{
+        + enabled : bool \\
+        + filled : bool \\
+        + name : string \\
+        + areas : List[LayerArea]
+      }{}
+
+      \umlclass[x=10, y=0]{LayerArea}{
+        + id : string \\
+        + label : string \\
+        + outline: LayerAreaOutline \\
+        + color : string
+      }{}
+
+      \umlclass[x=15, y=0]{LayerAreaOutline}{
+        + points : List[Position]
+      }{}
+
+    \end{tikzpicture}
+  }
+  \caption{Classi per la gestione dei layer}
+\end{figure}
+\noindent
+Per la gestione delle stanze, ogni layer area rappresenta il poligono della stanza.
+
+\subsection{Schema di funzionamento}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.95\textwidth]{room_recognition/console_data_flow.png}
+  \caption{Schema di funzionamento per la visualizzazione e modifica delle stanze}
+\end{figure}
+Console Service è la webapp per la gestione di Robee, sviluppato con Python, Tornado, Turbo e Stimulus JS e che sfrutta il pattern MVC.\\
+Quando un utente visita la pagina per la visualizzazione di una mappa, il server scarica l'immagine della mappa e costruisce l'html dal template iniettando i dati necessari e restituendo la pagina all'utente.\\ Successivamente, quando questo seleziona la visualizzazione del layer delle stanze dal menu a tendina, il client effettua una chiamata http GET /rooms al server che esegue una query al db, costruisce i modelli e li restituisce al client che renderizza i poligoni delle stanze in un canvas sovrapposto all'immagine della mappa.\\
+\subsection{Features}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{room_recognition/console/room_home.png}
+  \caption{Pagina di visualizzazione delle stanze}
+\end{figure}
+
+\protect
+\subsubsection{Taglio di una stanza}
+Selezionando la modalità \textit{cut} e cliccando su due punti del poligono, si effettua un taglio della stanza in due nuove stanze.
+\begin{figure}[H]
+  \begin{subfigure}[t]{0.50\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{room_recognition/console/room_cut_before.png}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.50\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{room_recognition/console/room_cut_after.png}
+  \end{subfigure}
+\end{figure}
+
+\protect
+\subsubsection{Nuovo punto nel poligono di una stanza}
+Selezionando la modalità \textit{add}, dopo aver selezionato un punto del poligono con un doppio click è possibile creare un nuovo punto successivo a quello selezionato precedentemente.
+\begin{figure}[H]
+  \begin{subfigure}[t]{0.50\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{room_recognition/console/room_add_before.png}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.50\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{room_recognition/console/room_add_after.png}
+  \end{subfigure}
+\end{figure}
+
+\protect
+\subsubsection{Eliminazione di una stanza}
+Selezionando la modalità \textit{delete}, è possibile eliminare una stanza cliccando su una qualsiasi parte di essa
+\begin{figure}[H]
+  \begin{subfigure}[t]{0.50\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{room_recognition/console/room_delete_before.png}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.50\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{room_recognition/console/room_delete_after.png}
+  \end{subfigure}
+\end{figure}
+
+\protect
+\subsubsection{Creazione di una nuova stanza}
+Selezionando la modalità \textit{add}, senza aver selezionato un qualsiasi punto di una stanza è possibile creare una nuova stanza facendo doppio click su un qualsiasi spazio vuoto della mappa. Non sono ammessi sovrapposizioni.
+\begin{figure}[H]
+  \begin{subfigure}[t]{0.50\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{room_recognition/console/room_new_before.png}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.50\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{room_recognition/console/room_new_after.png}
+  \end{subfigure}
+\end{figure}
+
+\protect
+\subsubsection{Spostamento di un punto del poligono di una stanza}
+Selezionando la modalità \textit{move}, è possibile spostare un punto del poligono della stanza cliccando su di esso e trascinandolo.
+\begin{figure}[H]
+  \begin{subfigure}[t]{0.50\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{room_recognition/console/room_move_before.png}
+  \end{subfigure}
+  \begin{subfigure}[t]{0.50\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{room_recognition/console/room_move_after.png}
+  \end{subfigure}
+\end{figure}
 
 \section{Conclusioni}
+In questo capitolo è stato affrontanto il processo di riconoscimento delle stanze a partire dalle mappe SLAM generate dai sensori LIDAR del robot. In particolare, è stato presentato il processo di individuazione proposto da \cite{mora} e basato su Voronoi \cite{thrun} che, prima dell'implementazione sembrava molto preciso ed efficace ma che tuttavia così non si è rivelato. Per questo motivo è stato sviluppato uno strumento che oltre alla classica visualizzazione dei risultati consente anche di modificare la disposizione delle stanze, come i classici strumenti di annotazione delle immagini. Le annotazioni delle stanze corrette, in futuro, potranno essere utilizzati come dati di training di un modello ML apposito.

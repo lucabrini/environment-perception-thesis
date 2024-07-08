@@ -65,25 +65,18 @@ class RoomSegmentationJob:
         
         segments_list = self.analyze_free_space()
         # PLOT
-        bg = cv.cvtColor(self.free_space_image, cv.COLOR_GRAY2RGB)
-        bg[self.free_space_skeleton == 255] = [0, 0, 255]
-        for segment in segments_list:
-            cv.line(bg, (segment.intersection_points[0][0], segment.intersection_points[0][1]),
-                    (segment.intersection_points[1][0], segment.intersection_points[1][1]), (0, 255, 0), 1)
-            cv.circle(bg, (segment.intersection_points[0][0], segment.intersection_points[0][1]), 2, (0, 255, 0), -1)
-            cv.circle(bg, (segment.intersection_points[1][0], segment.intersection_points[1][1]), 2, (0, 255, 0), -1)
-           
-            bg[segment.mask == 255] = [255, 0, 0]
-            cv.circle(bg, (int(segment.centroid[0]), int(segment.centroid[1])), 2, (255, 0, 0), -1)
             
-        plot_image(bg, "segments_and_intersections_lines")
-        # PLOT
         endpoints, endpoints_coords, threshold = self.analyze_occupied_space()
 
         # Find door locations
         door_locations = self.find_door_locations(segments_list, endpoints_coords, threshold)
         num_labels, labels, centroids, labels_segments_list = self.separate_rooms(door_locations)
-
+        # Convert the labels image to HSV colormap
+        labels_colors = np.uint8(255 * labels / np.max(labels))
+        bg_coords = np.where(labels_colors==0)
+        labels_colors = cv.applyColorMap(labels_colors, cv.COLORMAP_HSV)
+        labels_colors[bg_coords] = [0, 0, 0]
+        plot_image(labels_colors, "labels")
         rooms_bboxs = RoomSegmentationUtils.get_bbs_from_rooms_labels(labels, num_labels)
         for bbox in rooms_bboxs:
             cv.rectangle(self.image, (bbox[0], bbox[1]), (bbox[0] + bbox[2], bbox[1] + bbox[3]), (0, 0, 255), 2)
@@ -214,6 +207,7 @@ class RoomSegmentationJob:
                 closest_endpoints.append(closest_endpoint)
 
             segment.set_closest_endpoints(closest_endpoints)
+                        
             c_distance, ei_a_distance, ei_b_distance = segment.distances
 
             is_door_present = (
@@ -246,6 +240,7 @@ class RoomSegmentationJob:
                     segment.set_reason("Segment intersects with occupied space")
             else:
                 segment.set_reason("Door not present")
+                
         return segment_list
 
     def separate_rooms(self, segments_list: List['Segment']):
@@ -307,14 +302,6 @@ class RoomSegmentationUtils:
 
         kernels = [t1, t2, t3, t4, t5, t6, t7, t8]
         
-        fig, axs = plt.subplots(1, 8)
-        for i, ax in enumerate(axs):
-            ax.set_xticks([])
-            ax.set_yticks([])
-            ax.imshow(kernels[i], cmap='gray')
-
-        fig.savefig("endpoints_kernels.png", dpi=300, bbox_inches='tight', pad_inches=0.1)
-        plt.show()
         results = np.zeros(skeleton.shape[:2], dtype=int)
         for kernel in kernels:
             results = np.logical_or(cv.morphologyEx(skeleton, op=cv.MORPH_HITMISS, kernel=kernel,

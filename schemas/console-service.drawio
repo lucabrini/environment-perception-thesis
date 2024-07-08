@@ -1,0 +1,61 @@
+<mxfile host="app.diagrams.net" modified="2024-07-08T10:32:01.288Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36" etag="KUHHtH1kY5viLnVhU2xV" version="24.6.4" type="device">
+  <diagram name="Pagina-1" id="OCyLCaik0y2_XkNegyPp">
+    <mxGraphModel dx="609" dy="476" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="n9r5_rgxd68aVh3vsnC_-1" value="a" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Lucida Console;" vertex="1" parent="1">
+          <mxGeometry x="220" y="330" width="310" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="n9r5_rgxd68aVh3vsnC_-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0;exitY=0.25;exitDx=0;exitDy=0;endArrow=blockThin;endFill=1;endSize=3;startSize=3;fontFamily=Lucida Console;" edge="1" parent="1" source="n9r5_rgxd68aVh3vsnC_-2" target="n9r5_rgxd68aVh3vsnC_-5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n9r5_rgxd68aVh3vsnC_-14" value="rooms layers&lt;div&gt;query&amp;nbsp;&lt;br&gt;&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;fontFamily=Lucida Console;" vertex="1" connectable="0" parent="n9r5_rgxd68aVh3vsnC_-8">
+          <mxGeometry x="0.3175" relative="1" as="geometry">
+            <mxPoint x="-22" y="-15" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n9r5_rgxd68aVh3vsnC_-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;endArrow=blockThin;endFill=1;endSize=3;startSize=3;fontFamily=Lucida Console;" edge="1" parent="1" source="n9r5_rgxd68aVh3vsnC_-2" target="n9r5_rgxd68aVh3vsnC_-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n9r5_rgxd68aVh3vsnC_-11" value="static html,&amp;nbsp;&lt;div&gt;js bundle&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;fontFamily=Lucida Console;" vertex="1" connectable="0" parent="n9r5_rgxd68aVh3vsnC_-10">
+          <mxGeometry x="0.1668" relative="1" as="geometry">
+            <mxPoint x="-33" y="-15" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n9r5_rgxd68aVh3vsnC_-2" value="Server" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Lucida Console;" vertex="1" parent="1">
+          <mxGeometry x="240" y="370" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n9r5_rgxd68aVh3vsnC_-12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=-0.002;exitY=0.667;exitDx=0;exitDy=0;exitPerimeter=0;endArrow=blockThin;endFill=1;endSize=3;startSize=3;fontFamily=Lucida Console;" edge="1" parent="1" source="n9r5_rgxd68aVh3vsnC_-3">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="340" y="410" as="targetPoint" />
+            <Array as="points" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n9r5_rgxd68aVh3vsnC_-13" value="GET /rooms" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;fontFamily=Lucida Console;" vertex="1" connectable="0" parent="n9r5_rgxd68aVh3vsnC_-12">
+          <mxGeometry x="-0.2046" relative="1" as="geometry">
+            <mxPoint x="-9" y="10" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="n9r5_rgxd68aVh3vsnC_-3" value="Client" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Lucida Console;" vertex="1" parent="1">
+          <mxGeometry x="414" y="370" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="n9r5_rgxd68aVh3vsnC_-5" value="DB" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Lucida Console;" vertex="1" parent="1">
+          <mxGeometry x="20" y="330" width="120" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="n9r5_rgxd68aVh3vsnC_-4" value="" style="html=1;verticalLabelPosition=bottom;align=center;labelBackgroundColor=#ffffff;verticalAlign=top;strokeWidth=2;strokeColor=#000000;shadow=0;dashed=0;shape=mxgraph.ios7.icons.data;fontFamily=Lucida Console;" vertex="1" parent="1">
+          <mxGeometry x="40" y="370.45" width="24" height="29.099999999999998" as="geometry" />
+        </mxCell>
+        <mxCell id="n9r5_rgxd68aVh3vsnC_-7" value="Console Service" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Lucida Console;" vertex="1" parent="1">
+          <mxGeometry x="210" y="330" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="n9r5_rgxd68aVh3vsnC_-9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=-0.001;entryY=0.704;entryDx=0;entryDy=0;entryPerimeter=0;endArrow=blockThin;endFill=1;endSize=3;startSize=3;fontFamily=Lucida Console;" edge="1" parent="1" source="n9r5_rgxd68aVh3vsnC_-5" target="n9r5_rgxd68aVh3vsnC_-2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="n9r5_rgxd68aVh3vsnC_-15" value="&lt;div&gt;rooms layers&amp;nbsp;&lt;/div&gt;&lt;div&gt;data&lt;/div&gt;" style="edgeLabel;html=1;align=left;verticalAlign=middle;resizable=0;points=[];labelBackgroundColor=none;fontFamily=Lucida Console;" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="152" y="427" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
