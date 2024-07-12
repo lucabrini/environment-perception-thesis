@@ -7,7 +7,7 @@ In questo capitolo verrà affrontata la generazione del grafo di scena dato un f
 \section{Generazione del Grafo di Scena}
 La generazione del grafo di scena è un passo fondamentale per il mantenimento della coerenza tra Mappa Semantica e Ambiente reale.\\
 Il grafo di scena è una struttura dati che rappresenta gli oggetti presenti nell'ambiente e le relazioni tra loro composto da nodi e archi. I nodi rappresentano gli oggetti, mentre gli archi rappresentano le relazioni tra gli oggetti. \\
-In questa sezione verrà affrontata la costruzione di questa struttura dati a partire da un frame RGB-D e il modello di ML utilizzato per l'inferenza degli oggetti e delle relazioni.
+In questa sezione verrà affrontata la costruzione di questa struttura dati a partire da un frame RGB-D e il modello di DL utilizzato per l'inferenza degli oggetti e delle relazioni.
 \subsection{Lettura dei frame RGB-D}
 All'interno dell'architettura cloud-native di Robee vi è la presenza di un pod chiamato "Streaming Module" il cui compito è streammare il feed video delle camera sul pod redis del robot, in modo che gli altri servizi o moduli possano accedere a questi dati tramite l'utilizzo di librerie wrapper, rendendo il tutto agnostico rispetto alla tipologia e al modello di videocamera utilizzati.
 
@@ -22,11 +22,48 @@ Ogni frame ricevuto dal feed video viene successivamente dato in input al modell
 	\item rel\_dists: lista con lunghezza pari al numero di relazioni tra oggetti rilevate. Ogni valore indica la probabilità associata alla $i$-esima relazione.
 \end{itemize}
 Questi dati vengono successivamente utilizzati per la costruzione del grafo di scena.
+\begin{figure}
+	\begin{subfigure}[t]{.5\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{scene_graph/psgtr_output.png}
+		\caption{Risultati di Segmentazione }
+	\end{subfigure}
+	\begin{subfigure}[t]{.5\textwidth}
+		\centering
+		\begin{tikzpicture}[ >={Stealth[round]},  % Arrow tip
+			auto,
+			thick  % Line thickness
+			]
 
+			% Define nodes
+			\begin{scope}[node distance=1.2cm and 0.62cm]
+				\node (palla da tennis) [circle, draw, scale=0.7, align=center] at (2, 1.5) {sports\\ball};
+				\node (bottiglia) [circle, draw, scale=0.7, align=center] at (-2, 3) {bottle};
+				\node (zoccolino muro) [circle, draw, scale=0.7, align=center] at (0, 2) {wall-\\tile};
+				\node (libro) [circle, draw, scale=0.7, align=center] at (-2, 1) {book};
+				\node (pavimento) [circle, draw, scale=0.7, align=center] at (0, 0) {floor-\\other-\\merged};
+			\end{scope}
+
+			% Define edges
+			\draw[<->] (bottiglia) to [bend left=30] node[midway, right] {\tiny{beside}} (palla da tennis);
+			\draw[<->] (zoccolino muro) to node[pos=0.2, left] {\tiny{attached to}} (pavimento);
+			\draw[->] (libro) to [bend right=30] node[midway, left] {\tiny{on}} (pavimento);
+			\draw[->] (libro) to [bend right=30] node[midway, right] {\tiny{under}} (bottiglia);
+			\draw[->] (bottiglia) to [bend right=30] node[midway, left] {\tiny{on}} (libro);
+			\draw[->] (pavimento) to [bend right=30] node[pos=0.1, left] {\tiny{under}} (libro);
+			\draw[->] (pavimento) to [bend right=30] node[pos=0.3, right] {\tiny{under}} (palla da tennis);
+			\draw[->] (palla da tennis) to [bend right=30] node[pos=0.4, left] {\tiny{on}} (pavimento);
+		\end{tikzpicture}
+		\caption{Risultati del Grafo di Scena}
+	\end{subfigure}
+	\caption{}
+\end{figure}
 \subsubsection{Panoptic Scene Graph - Transformer}
 Il modello PSGTr \cite{yang2022psg} è un modello di deep learning a singolo stato basato su architettura Transformer \cite{transformer} il cui obiettivo è quello di generare una rappresentazione a grafo della scena data la segmentazione panottica piuttosto che le bounding box degli oggetti rilevati.
 \paragraph*{Training}
-Il modello, per quanto riguarda gli oggetti, è stato addestrato su un dataset composto da 49mila immagini annotate basato su COCO \cite{coco} e Visual Genome \cite{visualgenemo}. Per le relazioni hanno estratto e costruito un dataset di 56 predicati a partire da dataset come VG-150 \cite{vg150}, VrR-VG \cite{vrvvg} and GQA \cite{cqa}.
+Il modello, per quanto riguarda gli oggetti, è stato addestrato su un dataset composto da 49mila immagini annotate basato su COCO \cite{coco} e Visual Genome \cite{visualgenemo}. Per le relazioni hanno estratto e costruito un dataset di 56 predicati a partire da dataset come VG-150 \cite{vg150}, VrR-VG \cite{vrvvg} and GQA \cite{cqa}.\\
+Il paper propone due versioni di PSGTr: quello addestrato in 12 epoche e quello addestrato in 60 epoche. Quello utilizzato in questo lavoro è il secondo.
+
 \paragraph*{Segmentazione Panoptica}
 La segmentazione panoptica individua gli oggetti e assegna a ogni pixel la label della classe dell'oggetto a cui appartengono. L'utilizzo di questa rispetto alle bounding da notevoli vantaggi:
 \begin{itemize}
@@ -37,7 +74,74 @@ La segmentazione panoptica individua gli oggetti e assegna a ogni pixel la label
 \paragraph*{Funzionamento di PSGTr}
 L'architettura di PSGTr è basata su DETR \cite{detr} e HOI \cite{hoi}. Il modello predice triple $(soggetto, predicato, verbo)$ e la localizzazione degli oggetti simultaneamente.
 \paragraph*{Pipeline PSGTr}
-Attraverso una \gls{backbone} CNN, PSGTr estrae le features dell'immagine e i positional encodings che, insieme alle triplet queries, vengono dati in input al transformer encoder-decoder. In questo processo, l'obiettivo è che le query apprendano la rappresentazione del grafo di scena a triple in modo che per ognuna di esse, le predictions di  $(soggetto, predicato, verbo)$ possano successivamente essere estratte da tre Feed Forward Network. Infine, il task di segmentazione viene eseguito da due head panoptiche, una per il soggetto e una per l'oggetto della relazione.
+Attraverso una \gls{backbone} CNN ResNet-50, PSGTr estrae le features dell'immagine e i positional encodings che, insieme alle triplet queries, vengono dati in input al transformer encoder-decoder. In questo processo, l'obiettivo è che le query apprendano la rappresentazione del grafo di scena a triple in modo che per ognuna di esse, le predictions di  $(soggetto, predicato, verbo)$ possano successivamente essere estratte da tre Feed Forward Network. Infine, il task di segmentazione viene eseguito da due head panoptiche, una per il soggetto e una per l'oggetto della relazione.
+
+\paragraph{Performance}
+Il paper fornisce i modelli PSGFormer e PSGTr in diverse configurazioni: Backbone ResNet-50 e ResNet-101, e modelli addestrati in 12 e 60 epoche. Per il nostro caso d'uso abbiamo scelto PSGTr in versione \textbf{ResNet-50 addestrato in 60 epoche} poiché è quello che ha ottenuto i risultati migliori per la generazione del grafo di scena, considerandosi Stato dell'Arte.\\\\
+\begin{table}[H]
+	\centering
+	\resizebox{\textwidth}{!}{
+		\begin{tabular}{llcccccc}
+			\toprule
+			Backbone & Method     & \multicolumn{3}{c}{Predicate Classification} & \multicolumn{3}{c}{Scene Graph Generation}                                                                                             \\
+			\cmidrule(lr){3-5} \cmidrule(lr){6-8}
+			         &            & R/mR@20                                      & R/mR@50                                    & R/mR@100             & R/mR@20              & R/mR@50              & R/mR@100             \\
+			\midrule
+			\multirow{6}{*}{ResNet-50}
+			         & IMP        & 31.9 / 9.55                                  & 36.8 / 10.9                                & 38.9 / 11.6          & 16.5 / 6.52          & 18.2 / 7.05          & 18.6 / 7.23          \\
+			         & MOTIFS     & 44.9 / 20.2                                  & 50.4 / 22.1                                & 52.4 / 22.9          & 20.0 / 9.10          & 21.7 / 9.57          & 22.0 / 9.69          \\
+			         & VCTree     & \textbf{45.3 / 20.5}                         & \textbf{50.8 / 22.6}                       & \textbf{52.7 / 23.3} & \textbf{20.6 / 9.70} & \textbf{22.1 / 10.2} & \textbf{22.5 / 10.2} \\
+			         & GPSNet     & 31.5 / 13.2                                  & 39.9 / 16.4                                & 44.7 / 17.3          & 16.9 / 7.49          & 19.6 / 7.49          & 20.7 / 7.63          \\
+			         & PSGTR      & -                                            & -                                          & -                    & 3.82 / 1.29          & 4.16 / 1.54          & 4.27 / 1.57          \\
+			         & PSGFormer  & -                                            & -                                          & -                    & \textbf{16.8 / 14.5} & \textbf{19.2 / 17.4} & \textbf{20.2 / 18.7} \\
+			         & PSGTR†     & -                                            & -                                          & -                    & 28.4 / 16.4          & 34.4 / 20.8          & 36.3 / 22.1          \\
+			         & PSGFormer† & -                                            & -                                          & -                    & 18.4 / 14.8          & 19.6 / 17.0          & 20.1 / 17.6          \\
+			\midrule
+			\multirow{6}{*}{ResNet-101}
+			         & IMP        & 30.5 / 8.97                                  & 35.9 / 10.5                                & 38.3 / 11.3          & 17.9 / 7.35          & 19.5 / 7.98          & 21.1 / 8.02          \\
+			         & MOTIFS     & 45.1 / 19.9                                  & 50.5 / 21.5                                & 52.5 / 22.2          & 20.9 / 9.24          & 22.0 / 9.69          & 22.9 / 9.89          \\
+			         & VCTree     & \textbf{45.9 / 21.4}                         & \textbf{51.2 / 23.1}                       & \textbf{53.1 / 23.8} & \textbf{21.3 / 10.2} & \textbf{23.7 / 10.3} & \textbf{23.9 / 10.3} \\
+			         & GPSNet     & 38.8 / 17.1                                  & 46.1 / 20.2                                & 50.0 / 21.7          & 18.4 / 6.52          & 20.0 / 6.97          & 20.6 / 7.17          \\
+			         & PSGTR      & -                                            & -                                          & -                    & 3.47 / 1.18          & 3.88 / 1.56          & 4.00 / 1.64          \\
+			         & PSGFormer  & -                                            & -                                          & -                    & \textbf{18.0 / 14.2} & \textbf{20.1 / 18.3} & \textbf{21.0 / 19.8} \\
+			         & PSGTR†     & -                                            & -                                          & -                    & 28.2 / 15.4          & 32.1 / 20.3          & 35.3 / 21.5          \\
+			         & PSGFormer† & -                                            & -                                          & -                    & 18.6 / 16.7          & 20.4 / 19.3          & 20.7 / 19.7          \\
+			\bottomrule
+		\end{tabular}
+	}
+	\caption{Comparazione delle Performance tra le varie configurazioni di PSGTr e PSGFormer e gli altri modelli del campo}
+	\label{tab:results}
+\end{table}
+\noindent
+Per quanto riguarda la segmentazione, PSGFormer out-performa PSGTr ottenendo risultati migliori in termini di PQ \cite{pq}. Inoltre, nessuno dei due è Stato dell'Arte per la segmentazione panottica su dataset COCO \cite{maskdino}.\\
+\begin{figure}[H]
+	\centering
+	\begin{tikzpicture}
+		\begin{axis}[
+				ybar,
+				symbolic x coords={PSGTr+, PSGFormer+, Mask DINO},
+				xtick=data,
+				ylabel={PQ},
+				ymin=0, ymax=100,
+				bar width=15pt,
+				width=0.6\textwidth,
+				height=0.4\textwidth,
+				nodes near coords, % Mostra i valori sopra le barre
+				every node near coord/.append style={font=\footnotesize},
+				enlarge x limits=0.8
+			]
+			\addplot[ybar, fill=orange] coordinates {(PSGTr+, 13.9)};
+			\addplot[ybar, fill=green] coordinates {(PSGFormer+, 36.8)};
+			\addplot[ybar, fill=teal] coordinates {(Mask DINO, 59.4)};
+		\end{axis}
+	\end{tikzpicture}
+	\caption{Confronto delle Panoptic Quality tra PSGTr PSGFormer  Mask DINO}
+	\label{fig:example_barchart}
+\end{figure}
+\noindent
+Questo problema viene mitigato dal fatto che, come verrà illustrato nella sezione successiva, per la posizione degli oggetti si utilizza il baricentro della maschera, ovvero $b = (mediana(x_s), mediana(y_s))$ dove $x_s$ e $y_s$ sono le liste dei valori x, y dei punti della maschera. Utilizzando la mediana si riduce l'effetto degli outliers, cosa che non succede utilizzando il centroide e quindi la media. \\
+Inoltre è preferibile per l'agente LLM responsabile del Mission Planning avere una segmentazione più precisa piuttosto che una segmentazione panottica più accurata, considerando che la posizione dell'oggetto viene usata principalmente per avvicinarsi all'oggetto e non per manipolarlo.\\
+È bene notare che le classi più colpite da questi problemi di segmentazione, in base all'analisi sperimentali, sono le classi di "arredamento" come \textit{wall, floor, ceiling, etc}. Queste classi, sono state inserite nella blacklist poichè, a prescindere da questo problema, non danno informazioni utili per il Mission Planning. Le maschere di queste classi vengono filtrate e non vengono considerate per la costruzione del grafo di scena.
 
 \subsection{Costruzione del grafo}
 L'obiettivo di questo step è la costruzione del grafo di scena rispetto all'ultimo frame. Per farlo, è necessario estrarre i dati dai risultati dell'inferenza di PSGTr e calcolare quei valori che dipendono dal sistema robot, come la posizione.
@@ -45,6 +149,7 @@ L'algoritmo di costruzione del grafo è costituito da 2 fasi principali:
 \begin{itemize}
 	\item Costruzione dei nodi per la scena semantica e per la mappa semantica:
 	      \begin{itemize}
+		      \item Estrazione delle classi e delle maschere degli oggetti individuati
 		      \item Calcolo della posizione dell'oggetto
 	      \end{itemize}
 	\item Costruzione degli archi per la scena semantica e per la mappa semantica
@@ -71,10 +176,11 @@ L'oggetto MMDetResult ritornato dalla funzione di inferenza del modello, come de
 \paragraph{Calcolo posizioni 3D}\label{paragraph:positions}
 Per ogni oggetto, si estrae la posizione 3D nella mappa del robot in modo che questo possa successivamente localizzarlo e raggiungerlo.
 \subparagraph{Calcolo posizione 3D nel \gls{pixel_system}}
-Le maschere generate dal modello consentono di calcolare il centroide $(x_i, y_i)$ dell'oggetto $i$-esimo. Tuttavia, queste maschere forniscono solo un valore in due dimensioni. Per il calcolo del valore $z_i$ si utilizza il \Gls{point_cloud} che, combinando il frame RGB con il frame Depth, permette di ottenere una rappresentazione 3D della scena. \\
+Le maschere generate dal modello consentono di calcolare il baricentro $(x_i, y_i)$ dell'oggetto $i$-esimo. Tuttavia, queste maschere forniscono solo un valore in due dimensioni. Per il calcolo del valore $z_i$ si utilizza il \Gls{point_cloud} che, combinando il frame RGB con il frame Depth, permette di ottenere una rappresentazione 3D della scena. \\
 Per ogni oggetto $i$, si maschera il Point Cloud con la maschera $i$-esima e si calcola $z_i$ come valore mediano tra le $z_s$ di tutti i punti mascherati ottenendo cosí una posizione $P_{ipd} = (x_i, y_i, z_i)$.
 % Reference System Image with panoptic example
 \begin{figure}[h]
+	\centering
 	\tdplotsetmaincoords{-10}{0}
 	\begin{tikzpicture}[tdplot_main_coords]
 		\begin{scope}[canvas is xy plane at z=0]
@@ -138,6 +244,7 @@ Dove:
 \end{itemize}
 
 \begin{figure}[h]
+	\centering
 	\tdplotsetmaincoords{-10}{0}
 	\begin{tikzpicture}[tdplot_main_coords]
 		\begin{scope}[canvas is xy plane at z=0]
@@ -173,7 +280,8 @@ Dove:
 
 \subparagraph{Calcolo posizione 3D nel sistema mappa}
 L'ultimo passaggio per ottenere la posizione dell'oggetto nella mappa è quello di utilizzare la Matrice Estrinseca della Camera, ovvero la \gls{homogeneous_transformation_matrix} usata per convertire le coordinate in sistema mondo a coordinate in sistema camera. Dipende dalla posizione e dall'orientamento della camera nel mondo. \\\\
-Dato che in questo contesto la camera è montata sulla testa del robot, la matrice estrinseca dipende dalla posizione e dall'orientamento di quest'ultima e a seguire di tutte le trasformate nell'\gls{tf_tree} del robot. All'interno dell'architettura di Robee, sono presenti due moduli che si occupano di calcolare le trasformate per passare da un sistema di coordinate ad un altro. Si utilizzano dunque questi moduli per calcolare la matrice estrinseca inversa rispetto alla mappa/robot che moltiplicata per le coordinate $P_{ic}$ ottenute precedentemente, permette di ottenere la posizione dell'oggetto nel sistema mappa/robot.
+Dato che in questo contesto la camera è montata sulla testa del robot, la matrice estrinseca dipende dalla posizione e dall'orientamento di quest'ultima e a seguire di tutte le trasformate nell'\gls{tf_tree} del robot, oltre che alla sua localizzazione. Infatti, in caso di errata localizzazione del modulo di navigazione la posizione degli oggetti non è precisa. \\
+All'interno dell'architettura di Robee, sono presenti due moduli che si occupano di calcolare le trasformate per passare da un sistema di coordinate ad un altro. Si utilizzano dunque questi moduli per calcolare la matrice estrinseca inversa rispetto alla mappa/robot che moltiplicata per le coordinate $P_{ic}$ ottenute precedentemente, permette di ottenere la posizione dell'oggetto nel sistema mappa/robot.
 
 \[
 	\begin{bmatrix}
@@ -200,7 +308,7 @@ Dove:
 	\item $x_{im}, y_{im}, z_{im}$ sono le coordinate in sistema mappa dell'oggetto $i$
 \end{itemize}
 
-\begin{algorithm}
+\begin{algorithm}[H]
 	\caption{Calcolo della posizione 3D nel sistema mappa}
 	\begin{algorithmic}[1]
 		\Procedure{get\_map\_coords}{$P_{ic}$}
@@ -212,8 +320,9 @@ Dove:
 \end{algorithm}
 
 \paragraph{Istanziamento dei nodi}
-Con tutti i dati ora a dispozione è possibile istanziare i nodi per la scena semantica e per la mappa semantica. Per la scena semantica, si istanziano i nodi con la posizione 3D nel sistema di riferimento del robot, mentre per la mappa semantica, si istanziano i nodi con la posizione 3D nel sistema di riferimento della mappa. \\
-A causa del rumore del frame Depth nelle zone troppe vicine o troppo lontane dalla camera, è necessaria l'applicazione di un filtro per escludere gli oggetti che distano troppo dalla camera o che sono troppo vicini. Le soglie di distanza vengono impostate nei parametri di configurazione del servizio.
+Con tutti i dati ora a dispozione è possibile istanziare i nodi per la scena semantica e per la mappa semantica.\\
+Per la scena semantica, si istanziano i nodi con la posizione 3D nel sistema di riferimento del robot, mentre per la mappa semantica, si istanziano i nodi con la posizione 3D nel sistema di riferimento della mappa. \\
+A causa del rumore del frame Depth nelle zone troppe vicine o troppo lontane dalla camera, è necessaria l'applicazione di un filtro per escludere gli oggetti che distano troppo dalla camera o che sono troppo vicini. Inoltre, per evitare di inserire nella mappa oggetti che non aggiungono nessuna informazione per il Mission Planning, come ad classi di "arredamento" \textit{(wall, floor, ceiling)}, si controlla che la classe di appartenenza di un oggetto non sia all'interno della blacklist. Questa e le soglie di distanza sono parametri configurabili del servizio, globalmente o per robot.
 
 \begin{algorithm}
 	\caption{Instanziamento dei nodi}
@@ -223,7 +332,7 @@ A causa del rumore del frame Depth nelle zone troppe vicine o troppo lontane dal
 		\State $obj\_pixel\_coords \gets \Call{get\_pixel\_coords}{depth\_frame, obj\_masks[i]}$
 		\State $obj\_camera\_coords, distance \gets \Call{get\_camera\_coords}{obj\_pixel\_coords}$
 		\State $obj\_coords \gets \Call{get\_map\_coords}{obj\_camera\_coords}$
-		\If{$distance > min\_distance$ \textbf{and} $distance < max\_distance$}
+		\If{$distance > min\_distance$ \textbf{and} $distance < max\_distance$ \textbf{and} $obj\_classes[i]$ \textbf{not in} $blacklist$}
 		\State $node \gets \text{Node}(i, obj\_classes[i], obj\_coords)$
 		\State $obj\_ids.append(i)$
 		\State $semantic\_scene.add\_node(node)$
@@ -277,7 +386,7 @@ Il processo di aggiornamento della Mappa Semantica è composto da 3 fasi princip
 \end{itemize}
 
 \subsection{Trovare la stanza corrente del robot}
-Trovare la stanza corrente del robot è uno step necessario: permette di aggiornare il Grafo degli Oggetti della sola la stanza in cui il robot si trova, evitando di aggiornare l'intera mappa, efficientando il processo.\\
+Trovare la stanza corrente del robot è uno step necessario: permette di aggiornare il Grafo degli Oggetti della sola la stanza in cui il robot si trova, evitando di aggiornare l'intera mappa, efficientando il processo.
 % is_inside_polygon
 \subsubsection{Algoritmo di Ray Casting}
 Ogni nodo stanza della Mappa Semantica ha un attributo $segments$ che rappresenta i segmenti che delineano i confini della stanza fisica. \\
@@ -824,7 +933,8 @@ Nelle seguenti figure, si mostrano l'ambiente e le regioni della stanza attualme
 			\draw[->] (g) to [bend right=20] node[midway, above] {\tiny{on}} (i);
 		\end{tikzpicture}
 	\end{subfigure}
-\end{figure}~
+\end{figure}
+\noindent
 Nel seguente step, il robot ruota nella posizione iniziale dove la scena è cambiata. Tutti gli oggetti della Mappa Semantica che cadevano all'interno del frustum vengono rimossi e i nuovi oggetti rilevati, che in questo caso sono la sedia, il tavolo e la bottiglia, vengono aggiunti.
 
 \begin{figure}[H]
@@ -867,9 +977,10 @@ Nel seguente step, il robot ruota nella posizione iniziale dove la scena è camb
 \section{Conclusioni}
 In questo capitolo è stata presentata la pipeline di generazione della Mappa Semantica attraverso l'utilizzo del modello PSGTr e l'aggiornamento di questa con i nuovi dati di inferenza del modello utilizzando tecniche geometriche.\\\\
 ~
-Il modello PSGTr è stato scelto per la sua capacità di generare il grafo di scena in un tempo di inferenza ragionevole per applicazioni real time: richiede infatti circa $400ms$ in un cluster avente accesso a NVIDIA T4 permettendo così di aggiornare la rappresentazione semantica dell'ambiente praticamente instantaneamente.\\\\
+Il modello PSGTr è stato scelto per la sua capacità di generare il grafo di scena in un tempo di inferenza ragionevole per applicazioni real time: infatti, in un cluster avente accesso a NVIDIA T4, richiede circa $400ms$ per un'immagine in 480p, abbastanza per la segmentazione panoptica, permettendo così di aggiornare la base di conoscenza dell'ambiente con un refresh rate adeguato al caso d'uso.\\\\
 ~
 La pipeline di aggiornamento della Mappa Semantica è semplice, efficiente ed efficace: Grazie all'utilizzo di operazioni di geometria lineare, che si traducono in moltiplicazioni e somme di numeri, è possibile aggiornare la mappa in un tempo ragionevole.\\\\
 ~
-In futuro si può sperimentare introducendo modelli \cite{yang2023pvsg} che utilizzano anche il tracking degli oggetti segmentati in modo da poter tracciare gli oggetti nel tempo e aggiornare direttamente la mappa senza dover ricorrere a tecniche geometriche.
-
+In futuro si può sperimentare introducendo modelli \cite{yang2023pvsg} che utilizzano anche il tracking degli oggetti segmentati in modo da poter tracciare gli oggetti nel tempo e aggiornare direttamente la mappa senza dover ricorrere a tecniche geometriche.\\\\
+~
+Uno dei problemi riscontrati è quello legato alla qualità di segmentazione panoptica del modello che non è Stato dell'Arte. Nonostante siano stati implementati meccanismi per limitare questo tipo di problemi, una possibile soluzione è quella di utilizzare modelli distinti: uno per la generazione del grafo di scena, PSGTr che è SOTA, e uno per la segmentazione panoptica. Questa alternativa non è stata considerata per via del poco tempo a disposizione nel tirocinio. Inoltre, un problema che potrebbe sorgere è la bassa precisione della posizione degli oggetti a causa di un'errata localizzazione del robot nella mappa.

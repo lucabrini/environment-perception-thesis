@@ -173,22 +173,22 @@ Successivamente si procede con la rimozione dei punti di branch dal diagramma di
 
   \begin{subfigure}[t]{.45\textwidth}
     \centering
-    \includegraphics[width=0.98\textwidth]{room_recognition/mora/diagram.png}
+    \includegraphics[width=0.98\textwidth]{room_recognition/mora/free_space_voronoi_diagram.png}
     \caption{Diagramma di Voronoi approssimato}
   \end{subfigure}
   \begin{subfigure}[t]{.45\textwidth}
     \centering
-    \includegraphics[width=0.98\textwidth]{room_recognition/mora/branching_points.png}
+    \includegraphics[width=0.98\textwidth]{room_recognition/mora/free_space_diagram_endpoints.png}
     \caption{Punti di branch del diagramma di Voronoi}
   \end{subfigure}\\
   \begin{subfigure}[t]{.45\textwidth}
     \centering
-    \includegraphics[width=0.98\textwidth]{room_recognition/mora/diagram_minus_branch_pts.png}
+    \includegraphics[width=0.98\textwidth]{room_recognition/mora/free_space_diagram_no_branch_points.png}
     \caption{Differenza tra il diagramma di Voronoi e i punti di branch}
   \end{subfigure}
   \begin{subfigure}[t]{.45\textwidth}
     \centering
-    \includegraphics[width=0.98\textwidth]{room_recognition/mora/diagram_branch_labeling.png}
+    \includegraphics[width=0.98\textwidth]{room_recognition/mora/free_space_diagram_branches_labeling.png}
     \caption{Labeling delle componenti connesse dell'immagine {(c)}}
   \end{subfigure}
 \end{figure}
@@ -200,6 +200,11 @@ Un segmento è definito come l'insieme di punti del branch che hanno una clearan
   \text{segmento} = \{p \mid | \text{clearance}(p) - \text{clearance}_{\text{min}} | \leq 2\}
 \end{equation}
 A supporto dell'individuazione dei segmenti, si calcola la trasformata distanza che assegna ad ogni pixel il valore della distanza minima da un pixel dello spazio occupato e si utilizza per calcolare la clearance di ogni punto del branch.\\Per ogni segmento si salva centroide e orientamento.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.441\textwidth]{room_recognition/mora/free_space_distance_tr.png}
+  \caption{Trasformata distanza dello spazio libero}
+\end{figure}
 \paragraph{Calcolo orientamento del segmento}
 Si trovano gli endpoints $a$ e $b$ (attraverso la trasformata HIT or MISS con kernels che verranno approfonditi nella sezione successiva) e si calcola l'orientamento del segmento come l'angolo tra la retta passante per gli endpoints e l'asse x.\\
 In particolare, se la retta passante per i due punti non è verticale, si calcola $m = \frac{y_a - y_b}{x_a-x_b}$, coefficiente angolare della retta e si calcola l'orientamento come $\theta = \arctan(m)$.
@@ -294,12 +299,12 @@ I diagrammi con meno di 20 pixels vengono scartati, in modo da rimuovere i diagr
   \centering
   \begin{subfigure}[t]{0.45\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{room_recognition/mora/occupied_space_voronoi.png}
+    \includegraphics[width=\textwidth]{room_recognition/mora/occupied_space_voronoi_diagram.png}
     \caption{Diagramma di Voronoi dello spazio occupato}
   \end{subfigure}
   \begin{subfigure}[t]{0.45\textwidth}
     \centering
-    \includegraphics[width=\textwidth]{room_recognition/mora/occupied_space_diagram_labeling.png}
+    \includegraphics[width=\textwidth]{room_recognition/mora/occupied_space_diagram_branches_labeling.png}
     \caption{Labeling delle componenti connesse di (a)}
   \end{subfigure}
 \end{figure}

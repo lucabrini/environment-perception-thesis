@@ -14,6 +14,8 @@
 \usepackage{tikz-uml}
 \usepackage{pgfplots}
 \usepackage{glossaries}
+\usepackage{booktabs}
+\usepackage{multirow}
 \usetikzlibrary{positioning}
 \usetikzlibrary{graphs}
 \usetikzlibrary{intersections}
@@ -22,17 +24,26 @@
 \usepackage{quiver}
 \usepackage{wrapfig}
 \usepackage{float}
+\usepackage{afterpage}
 \usepackage[
 backend=bibtex,
 style=ieee,
 sorting=ynt
 ]{biblatex}
+
 \addbibresource{bibliography.bib}
 
 \graphicspath{ {./images/} }
 
 \pagestyle{plain} %oppure none
 \author{Luca Brini}
+
+\newcommand\myemptypage{
+    \null
+    \thispagestyle{empty}
+    \addtocounter{page}{-1}
+    \newpage
+    }
 
 \input{glossary.tex}
 \makenoidxglossaries
@@ -42,9 +53,14 @@ sorting=ynt
 \begin{document}
 
 \subfile{src/frontispiece}
+\myemptypage
 
+
+
+\frontmatter
 \tableofcontents
 
+\mainmatter
 % Introduzione
 \chapter*{Introduzione}
 \addcontentsline{toc}{chapter}{Introduzione}
@@ -52,8 +68,7 @@ sorting=ynt
 \subfile{src/introduction.tex}
 
 % Stato dell'arte
-\chapter*{Stato dell'Arte}
-\addcontentsline{toc}{chapter}{Stato dell'Arte}
+\chapter{Stato dell'Arte}
 \subfile{src/state_of_the_art.tex}
 
 % Mappe semantiche
@@ -76,16 +91,22 @@ sorting=ynt
 
 \subfile{src/conclusions.tex}
 
-% Appendice
+\addcontentsline{toc}{chapter}{Bibliografia}
+\printbibliography
+
 \appendix
 \chapter{Appendice}
 
 \subfile{src/robee.tex}
 \subfile{src/code.tex}
 
+\addcontentsline{toc}{chapter}{Glossario}
 \printnoidxglossaries
 
-\printbibliography
+\addcontentsline{toc}{chapter}{Lista delle Figure}
+\listoffigures
+\addcontentsline{toc}{chapter}{Lista delle Tabelle}
+\listoftables
 
 \end{document}
 

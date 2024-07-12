@@ -71,12 +71,7 @@ class RoomSegmentationJob:
         # Find door locations
         door_locations = self.find_door_locations(segments_list, endpoints_coords, threshold)
         num_labels, labels, centroids, labels_segments_list = self.separate_rooms(door_locations)
-        # Convert the labels image to HSV colormap
-        labels_colors = np.uint8(255 * labels / np.max(labels))
-        bg_coords = np.where(labels_colors==0)
-        labels_colors = cv.applyColorMap(labels_colors, cv.COLORMAP_HSV)
-        labels_colors[bg_coords] = [0, 0, 0]
-        plot_image(labels_colors, "labels")
+        
         rooms_bboxs = RoomSegmentationUtils.get_bbs_from_rooms_labels(labels, num_labels)
         for bbox in rooms_bboxs:
             cv.rectangle(self.image, (bbox[0], bbox[1]), (bbox[0] + bbox[2], bbox[1] + bbox[3]), (0, 0, 255), 2)
@@ -128,6 +123,7 @@ class RoomSegmentationJob:
 
     def voronoi_free_space(self, area_threshold=10):
         self.free_space_skeleton, skeleton_coords = RoomSegmentationUtils.skeletonize_image(self.free_space_image)
+        
         # Find branching points
         branching_points = RoomSegmentationUtils.find_branching_points(self.free_space_skeleton)
 
@@ -138,13 +134,13 @@ class RoomSegmentationJob:
         branches_num, branches_labels = RoomSegmentationUtils.filter_small_branches(self.free_space_skeleton, area_threshold)
         self.free_space_skeleton = np.zeros_like(self.free_space_skeleton)
         self.free_space_skeleton[branches_labels > 0] = 255
+        
         return branches_num, branches_labels
         
     def analyze_free_space(self, area_threshold=10):
         branches_num, branches_labels = self.voronoi_free_space()
         # Compute distance transform
         distances = cv.distanceTransform(self.free_space_image, cv.DIST_L2, 0)
-
         # For each branch, find the point in the branch whose distance is the minimum
         segments_list = []
         for i in range(1, branches_num):
@@ -174,8 +170,14 @@ class RoomSegmentationJob:
         self.occupied_space_skeleton, skeleton_coords = RoomSegmentationUtils.skeletonize_image(
             self.occupied_space_image)
         self.occupied_space_skeleton = self.occupied_space_skeleton * 255
+        plot_image(self.occupied_space_skeleton, "occupied_space_voronoi_diagram")
+        
         branches_num, branches_labels = RoomSegmentationUtils.filter_small_branches(self.occupied_space_skeleton, 20)
-
+        color_labels = np.uint8(255 * branches_labels / np.max(branches_labels))
+        color_labels = cv.applyColorMap(color_labels, cv.COLORMAP_HSV)
+        color_labels[np.where(branches_labels == 0)] = [0, 0, 0]
+        plot_image(color_labels, "occupied_space_diagram_branches_labeling")
+        
         branches_labels_out = branches_labels.astype(np.uint8) * 255
         branches_labels_out = cv.applyColorMap(branches_labels_out, cv.COLORMAP_JET)
 
@@ -188,6 +190,12 @@ class RoomSegmentationJob:
         wall_thickness = np.mean(skeleton_distance_values) * 2
 
         endpoints, endpoints_coords = RoomSegmentationUtils.find_end_points(self.occupied_space_skeleton)
+        
+        bg = np.zeros((self.occupied_space_skeleton.shape[0], self.occupied_space_skeleton.shape[1], 3), np.uint8)
+        bg[np.where(self.occupied_space_skeleton == 255)] = [255, 255, 255]
+        for endpoint in endpoints_coords:
+            cv.circle(bg, (endpoint[0], endpoint[1]), 2, (255, 0, 0), -1)
+        plot_image(bg, "occupied_space_diagram_endpoints")
         return endpoints, endpoints_coords, wall_thickness
 
     def find_door_locations(self, segment_list: List['Segment'], endpoints_coords: List[np.array],
