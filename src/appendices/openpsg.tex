@@ -1,0 +1,181 @@
+\chapter{Panoptic Scene Graph}
+In questa sezione dell'appendice verranno riportate tutte le informazioni che non sono state inserite nel capitolo \ref{chap:grafo_di_scena}.\\
+
+\section{Classi oggetto e predicati}
+
+\subsection{Predicati}
+\begin{center}
+  \begin{supertabular}{|l|l|l|l|}
+    \hline
+    over & in front of & beside & on \\
+    in & attached to & hanging from & on back of \\
+    falling off & going down & painted on & walking on \\
+    running on & crossing & standing on & lying on \\
+    sitting on & flying over & jumping over & jumping from \\
+    wearing & holding & carrying & looking at \\
+    guiding & kissing & eating & drinking \\
+    feeding & biting & catching & picking \\
+    playing with & chasing & climbing & cleaning \\
+    playing & touching & pushing & pulling \\
+    opening & cooking & talking to & throwing \\
+    slicing & driving & riding & parked on \\
+    driving on & about to hit & kicking & swinging \\
+    entering & exiting & enclosing & leaning on \\
+    \hline
+  \end{supertabular}
+\end{center}
+
+\subsection{Classi oggetto}
+\twocolumn
+\tablehead{%
+  \hline
+  \textbf{Classe} & \textbf{Tipologia} \\
+  \hline}
+\tabletail{%
+  \hline}
+\small
+\begin{supertabular}{|l|l|}
+  person                & \tiny{LIVING\_ENTITY}     \\
+  bicycle               & \tiny{UNPICKLE\_OBJECT  } \\
+  car                   & \tiny{PLACEABLE\_ASSET  } \\
+  motorcycle            & \tiny{UNPICKLE\_OBJECT  } \\
+  airplane              & \tiny{UNPLACEABLE\_ASSET} \\
+  bus                   & \tiny{UNPLACEABLE\_ASSET} \\
+  train                 & \tiny{UNPICKLE\_OBJECT  } \\
+  truck                 & \tiny{UNPICKLE\_OBJECT  } \\
+  boat                  & \tiny{UNPICKLE\_OBJECT  } \\
+  traffic light         & \tiny{UNPICKLE\_OBJECT  } \\
+  fire hydrant          & \tiny{UNPICKLE\_OBJECT  } \\
+  stop sign             & \tiny{PICKLE\_OBJECT    } \\
+  parking meter         & \tiny{PLACEABLE\_ASSET  } \\
+  bench                 & \tiny{PLACEABLE\_ASSET  } \\
+  bird                  & \tiny{LIVING\_ENTITY    } \\
+  cat                   & \tiny{LIVING\_ENTITY    } \\
+  dog                   & \tiny{LIVING\_ENTITY    } \\
+  horse                 & \tiny{LIVING\_ENTITY    } \\
+  sheep                 & \tiny{LIVING\_ENTITY    } \\
+  cow                   & \tiny{LIVING\_ENTITY    } \\
+  elephant              & \tiny{LIVING\_ENTITY    } \\
+  bear                  & \tiny{LIVING\_ENTITY    } \\
+  zebra                 & \tiny{LIVING\_ENTITY    } \\
+  giraffe               & \tiny{LIVING\_ENTITY    } \\
+  backpack              & \tiny{PICKLE\_OBJECT    } \\
+  umbrella              & \tiny{PICKLE\_OBJECT    } \\
+  handbag               & \tiny{PICKLE\_OBJECT    } \\
+  tie                   & \tiny{PICKLE\_OBJECT    } \\
+  suitcase              & \tiny{PICKLE\_OBJECT    } \\
+  frisbee               & \tiny{PICKLE\_OBJECT    } \\
+  skis                  & \tiny{PICKLE\_OBJECT    } \\
+  snowboard             & \tiny{PICKLE\_OBJECT    } \\
+  sports ball           & \tiny{PICKLE\_OBJECT    } \\
+  kite                  & \tiny{PICKLE\_OBJECT    } \\
+  baseball bat          & \tiny{PICKLE\_OBJECT    } \\
+  baseball glove        & \tiny{PICKLE\_OBJECT    } \\
+  skateboard            & \tiny{PICKLE\_OBJECT    } \\
+  surfboard             & \tiny{PICKLE\_OBJECT    } \\
+  tennis racket         & \tiny{PICKLE\_OBJECT    } \\
+  bottle                & \tiny{PICKLE\_OBJECT    } \\
+  wine glass            & \tiny{PICKLE\_OBJECT    } \\
+  cup                   & \tiny{PICKLE\_OBJECT    } \\
+  fork                  & \tiny{PICKLE\_OBJECT    } \\
+  knife                 & \tiny{PICKLE\_OBJECT    } \\
+  spoon                 & \tiny{PICKLE\_OBJECT    } \\
+  bowl                  & \tiny{PICKLE\_OBJECT    } \\
+  banana                & \tiny{PICKLE\_OBJECT    } \\
+  apple                 & \tiny{PICKLE\_OBJECT    } \\
+  sandwich              & \tiny{PICKLE\_OBJECT    } \\
+  orange                & \tiny{PICKLE\_OBJECT    } \\
+  broccoli              & \tiny{PICKLE\_OBJECT    } \\
+  carrot                & \tiny{PICKLE\_OBJECT    } \\
+  hot dog               & \tiny{PICKLE\_OBJECT    } \\
+  pizza                 & \tiny{PICKLE\_OBJECT    } \\
+  donut                 & \tiny{PICKLE\_OBJECT    } \\
+  cake                  & \tiny{PICKLE\_OBJECT    } \\
+  chair                 & \tiny{PLACEABLE\_ASSET  } \\
+  couch                 & \tiny{PLACEABLE\_ASSET  } \\
+  potted plant          & \tiny{PICKLE\_OBJECT    } \\
+  bed                   & \tiny{PLACEABLE\_ASSET  } \\
+  dining table          & \tiny{PLACEABLE\_ASSET  } \\
+  toilet                & \tiny{UNPLACEABLE\_ASSET} \\
+  tv                    & \tiny{UNPLACEABLE\_ASSET} \\
+  laptop                & \tiny{PICKLE\_OBJECT    } \\
+  mouse                 & \tiny{PICKLE\_OBJECT    } \\
+  remote                & \tiny{PICKLE\_OBJECT    } \\
+  keyboard              & \tiny{PICKLE\_OBJECT    } \\
+  cell phone            & \tiny{PICKLE\_OBJECT    } \\
+  microwave             & \tiny{PLACEABLE\_ASSET  } \\
+  oven                  & \tiny{UNPLACEABLE\_ASSET} \\
+  toaster               & \tiny{PICKLE\_OBJECT    } \\
+  sink                  & \tiny{PICKLE\_OBJECT    } \\
+  refrigerator          & \tiny{PLACEABLE\_ASSET  } \\
+  book                  & \tiny{PICKLE\_OBJECT    } \\
+  clock                 & \tiny{PICKLE\_OBJECT    } \\
+  vase                  & \tiny{PICKLE\_OBJECT    } \\
+  scissors              & \tiny{PICKLE\_OBJECT    } \\
+  teddy bear            & \tiny{PICKLE\_OBJECT    } \\
+  hair drier            & \tiny{PICKLE\_OBJECT    } \\
+  toothbrush            & \tiny{PICKLE\_OBJECT    } \\
+  banner                & \tiny{PICKLE\_OBJECT    } \\
+  blanket               & \tiny{PICKLE\_OBJECT    } \\
+  bridge                & \tiny{UNPLACEABLE\_ASSET} \\
+  cardboard             & \tiny{PICKLE\_OBJECT    } \\
+  counter               & \tiny{PICKLE\_OBJECT    } \\
+  curtain               & \tiny{PICKLE\_OBJECT    } \\
+  door-stuff            & \tiny{PICKLE\_OBJECT    } \\
+  floor-wood            & \tiny{PLACEABLE\_ASSET  } \\
+  flower                & \tiny{PICKLE\_OBJECT    } \\
+  fruit                 & \tiny{PICKLE\_OBJECT    } \\
+  gravel                & \tiny{UNPICKLE\_OBJECT  } \\
+  house                 & \tiny{UNPLACEABLE\_ASSET} \\
+  light                 & \tiny{UNPLACEABLE\_ASSET} \\
+  mirror-stuff          & \tiny{UNPLACEABLE\_ASSET} \\
+  net                   & \tiny{PICKLE\_OBJECT    } \\
+  pillow                & \tiny{PICKLE\_OBJECT    } \\
+  platform              & \tiny{PLACEABLE\_ASSET  } \\
+  playingfield          & \tiny{PLACEABLE\_ASSET  } \\
+  railroad              & \tiny{UNPLACEABLE\_ASSET} \\
+  river                 & \tiny{UNPLACEABLE\_ASSET} \\
+  road                  & \tiny{UNPLACEABLE\_ASSET} \\
+  roof                  & \tiny{PLACEABLE\_ASSET  } \\
+  sand                  & \tiny{UNPLACEABLE\_ASSET} \\
+  sea                   & \tiny{PLACEABLE\_ASSET  } \\
+  shelf                 & \tiny{PLACEABLE\_ASSET  } \\
+  snow                  & \tiny{PLACEABLE\_ASSET  } \\
+  stairs                & \tiny{UNPLACEABLE\_ASSET} \\
+  tent                  & \tiny{PLACEABLE\_ASSET  } \\
+  towel                 & \tiny{PICKLE\_OBJECT    } \\
+  wall-brick            & \tiny{UNPLACEABLE\_ASSET} \\
+  wall-stone            & \tiny{UNPLACEABLE\_ASSET} \\
+  wall-tile             & \tiny{UNPLACEABLE\_ASSET} \\
+  wall-wood             & \tiny{UNPLACEABLE\_ASSET} \\
+  water-other           & \tiny{UNPICKLE\_OBJECT  } \\
+  window-blind          & \tiny{UNPLACEABLE\_ASSET} \\
+  window-other          & \tiny{UNPLACEABLE\_ASSET} \\
+  tree-merged           & \tiny{UNPLACEABLE\_ASSET} \\
+  fence-merged          & \tiny{UNPLACEABLE\_ASSET} \\
+  ceiling-merged        & \tiny{UNPLACEABLE\_ASSET} \\
+  sky-other-merged      & \tiny{UNPLACEABLE\_ASSET} \\
+  cabinet-merged        & \tiny{PLACEABLE\_ASSET  } \\
+  table-merged          & \tiny{PLACEABLE\_ASSET  } \\
+  floor-other-merged    & \tiny{PLACEABLE\_ASSET  } \\
+  pavement-merged       & \tiny{PLACEABLE\_ASSET  } \\
+  mountain-merged       & \tiny{UNPLACEABLE\_ASSET} \\
+  grass-merged          & \tiny{PLACEABLE\_ASSET  } \\
+  dirt-merged           & \tiny{PICKLE\_OBJECT    } \\
+  paper-merged          & \tiny{PICKLE\_OBJECT    } \\
+  food-other-merged     & \tiny{PICKLE\_OBJECT    } \\
+  building-other-merged & \tiny{UNPLACEABLE\_ASSET} \\
+  rock-merged           & \tiny{UNPICKLE\_OBJECT  } \\
+  wall-other-merged     & \tiny{UNPLACEABLE\_ASSET} \\
+  rug-merged            & \tiny{UNPLACEABLE\_ASSET} \\
+  background            & \tiny{UNPLACEABLE\_ASSET} \\
+\end{supertabular}
+\pagebreak
+\onecolumn
+
+
+\section{Blacklist delle Classi oggetto}
+
+\section{Configurazione del servizio di scene perception}
+
+\section{Esempi}

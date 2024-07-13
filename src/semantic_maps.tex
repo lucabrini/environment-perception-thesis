@@ -80,9 +80,11 @@ I nodi oggetto rappresentano gli oggetti riconosciuti all'interno dell'ambiente 
   \item Reference Posizione: origine del sistema di riferimento delle posizioni degli oggetti. Può essere l'origine del sistema Mappa o l'origine del sistema Robot;
   \item Tipo: rappresenta la tipologia dell'oggetto che può essere scelta tra:
         \begin{itemize}
-          \item Pickable: qualora l'oggetto possa essere preso attraverso gli end effectors del robot;
-          \item Non Pickable: qualora l'oggetto non possa essere preso attraverso gli end effectors del robot;
-          \item Asset: in tutti gli altri casi \textit{(Per esempio un tavolo)}.
+          \item Living Entity: entità vivente;
+          \item Unpickable Object: qualora l'oggetto non possa essere preso attraverso gli end effectors del robot;
+          \item Pickable Object: qualora l'oggetto possa essere preso attraverso gli end effectors del robot;
+          \item Placeable Asset: qualora l'oggetto possa essere spostato ma non preso;
+          \item Unplaceable Asset: qualora l'oggetto non possa essere spostato.
         \end{itemize}
 \end{itemize}
 I nodi oggetto vengono aggiornati con le inferenze di nuovi frame video: possono dunque essere eliminati dalla mappa semantica qualora un oggetto non si presenti più all'interno della scena oppure aggiornati, per esempio a livello di posizione, qualora l'oggetto venga spostato.

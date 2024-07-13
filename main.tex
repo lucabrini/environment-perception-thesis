@@ -9,13 +9,11 @@
 \usepackage{wrapfig} % allows warped figures
 \usepackage{subfiles} % support multiple files
 \usepackage{fancyhdr} % more control on headers and footers
-\usepackage{tikz}
-\usepackage{tikz-3dplot}
-\usepackage{tikz-uml}
-\usepackage{pgfplots}
+\usepackage{tikz, tikz-3dplot, tikz-uml, pgfplots}
 \usepackage{glossaries}
 \usepackage{booktabs}
-\usepackage{multirow}
+\usepackage{supertabular}
+\usepackage{multirow, multicol}
 \usetikzlibrary{positioning}
 \usetikzlibrary{graphs}
 \usetikzlibrary{intersections}
@@ -95,10 +93,10 @@ sorting=ynt
 \printbibliography
 
 \appendix
-\chapter{Appendice}
-
-\subfile{src/robee.tex}
-\subfile{src/code.tex}
+\addcontentsline{toc}{chapter}{Appendici}
+\subfile{src/appendices/robee.tex}
+\subfile{src/appendices/code.tex}
+\subfile{src/appendices/openpsg.tex}
 
 \addcontentsline{toc}{chapter}{Glossario}
 \printnoidxglossaries
