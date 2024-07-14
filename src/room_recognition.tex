@@ -1,21 +1,21 @@
-In questo capitolo verrà affrontato il processo di riconoscimento delle stanze a partire dalle mappa SLAM generata attraverso i sensori LIDAR del robot. In particolare, verrà presentato il processo di individuazione proposto da \cite{mora}, le modifiche adottate e la console per poter visualizzare e modificare i risultati ottenuti.\\\\
+In questo capitolo verrà affrontato il processo di \textbf{riconoscimento delle stanze} a partire dalle \textbf{mappa SLAM} generata attraverso i sensori LIDAR del robot. In particolare, verrà presentato il processo di individuazione proposto da \cite{mora}, le modifiche adottate e la console per poter visualizzare e modificare i risultati ottenuti.\\\\
 I risultati ottenuti da questo processo verranno utilizzati per la generazione del grafo delle stanze nella mappa semantica.
 
 \begin{figure}[H]
   \centering
   \includegraphics[width=\textwidth]{room_recognition/general_data_flow.png}
-  \caption{Schema dei flussi dati per il riconoscimento delle stanze e il salvataggio del grafo delle stanze}
+  \caption{Schema dei funzionamento per il riconoscimento delle stanze e il salvataggio del grafo delle stanze}
 \end{figure}
 
 \section{Grid maps}
-Le Grid Maps sono rappresentazioni spaziali dell'ambiente che utilizzano una griglia per suddividere lo spazio in celle o pixel. In questo caso, sono utilizzate per rappresentare le grid map di occupazione, ovvero mappe in cui ogni cella può assumere uno dei seguenti valori:
+Le Grid Maps sono \textbf{rappresentazioni spaziali dell'ambiente} che utilizzano una griglia per suddividere lo spazio in celle o pixel. In questo caso, sono utilizzate per rappresentare le grid map di occupazione, ovvero mappe in cui ogni cella può assumere uno dei seguenti valori:
 \begin{itemize}
   \item Nero: se la cella è occupata. Tipicamente viene utilizzato per rappresentare le pareti o gli ostacoli presenti nell'ambiente;
   \item Bianco: se la cella è libera. Tipicamente viene utilizzato per rappresentare lo spazio libero, quello percorribile dal robot;
   \item Grigio: se la cella è sconosciuta. Tipicamente viene utilizzato per rappresentare le celle di cui non si ha informazione.
 \end{itemize}
-Questa tipologia di mappe è utilizzata per la navigazione dei robot autonomi, in quanto permette di localizzarsi e mappare l'ambiente circostante simultaneamente (SLAM).\\\\
-Nel nostro caso, le grid map di occupazione vengono generate dal modulo di navigazione del robot e la loro immagine, in formato pgm, viene utilizzata per il riconoscimento delle stanze. In particolare, quando il modulo di navigazione effettua una richiesta http POST /navigation al servizio di API per la creazione di una nuova mappa in contemporanea viene eseguito il job di Room Segmentation.
+Questa tipologia di mappe è utilizzata per la navigazione dei robot autonomi, in quanto permette di \textbf{localizzarsi e mappare l'ambiente circostante simultaneamente} (SLAM).\\\\
+Nel nostro caso, le grid map di occupazione vengono \textbf{generate dal modulo di navigazione} del robot e la loro immagine, in formato pgm, viene \textbf{utilizzata per il riconoscimento delle stanze}. In particolare, quando il modulo di navigazione effettua una richiesta http \apiurl{POST /navigation} al servizio di API per la creazione di una nuova mappa in contemporanea viene eseguito il job di Room Segmentation.
 
 \begin{figure}[H]
   \centering
@@ -24,13 +24,13 @@ Nel nostro caso, le grid map di occupazione vengono generate dal modulo di navig
 \end{figure}
 
 \section{Riconoscimento delle Stanze}
-In questa sezione verrà presentato il processo di riconoscimento delle stanze proposto da \cite{mora} e basato sull'algoritmo originale di Voronoi \cite{thrun}.
+In questa sezione verrà presentato il processo di riconoscimento delle stanze proposto da \cite{mora} e basato sull'\textbf{algoritmo originale di Voronoi} \cite{thrun}.
 
 \subsection{Segmentazione basata su Voronoi}
-Il riconoscimento delle stanze è un task affrontato molto spesso nel campo. Ci sono infatti innumerevoli approcci per affrontare questo problema \cite{bormann}. Uno dei metodi più utilizzati è quello basato sull'algoritmo di Voronoi. Nel contesto di questa tesi, l'algoritmo di Voronoi \cite{thrun} è molto utile poichè genera anche un grafo topologico dove ogni nodo rappresenta una regione individuata e ogni arco rappresenta la connessione tra due di queste regioni. Questo è molto utile come base di partenza per la generazione del grafo delle stanze.\\\\
+Il task del riconoscimento delle stanze è stato affrontato molto spesso nella letteratura. Ci sono infatti innumerevoli approcci per affrontare questo problema \cite{bormann}. Uno dei metodi più utilizzati è quello basato sull'algoritmo di Voronoi. Nel contesto di questa tesi, l'algoritmo di Voronoi \cite{thrun} è molto utile poichè genera anche un \textbf{grafo topologico} dove ogni nodo rappresenta una regione individuata e ogni arco rappresenta la connessione tra due di queste regioni. Questo è molto utile come base di partenza per la generazione del \textbf{grafo delle stanze}.\\\\
 L'obiettivo dell'algoritmo di Voronoi è quello di decomporre le grid maps in un piccolo insieme di regioni separate da passaggi stretti e le porte, rappresentate da linee critiche. Questo processo è composto da tre fasi principali:
 \begin{itemize}
-  \item Binarizzazione: trasformazione della occupancy grid map in una mappa binaria; le celle con valori superiori della soglia sono considerate spazio libero $C$. Tutte le altre come spazio occupato $\bar{C}$.
+  \item Binarizzazione: trasformazione della occupancy grid map in una mappa binaria; le celle con valori superiori della soglia sono considerate spazio libero $C$. Tutte le altre come spazio occupato $\bar{C}$;
   \item Costruzione del Diagramma di Voronoi: Per ogni punto $p = <x, y> \in C$, esistono uno o più punti vicini $s \in \bar{C}$. Questi punti vengono chiamati \textit{punti base} di $<x, y>$ e la distanza tra $<x, y>$ e i suoi punti base come \textit{clearance} di $<x, y>$\\
         \begin{equation}
           \text{punti base} = \{s \mid s \in \bar{C}, \text{dist}(p, s) = \min_{s \in \bar{C}} \{\text{dist}(p,s)\}\}
@@ -38,9 +38,9 @@ L'obiettivo dell'algoritmo di Voronoi è quello di decomporre le grid maps in un
         \begin{equation}
           \text{clearance}(p) = \min_{s \in \text{punti base}} \{\text{dist}(p,s)\}
         \end{equation}
-        Il diagramma di Voronoi è l'insieme dei punti $p \in C$ che hanno almeno due diversi punti equidistanti base;
-  \item Identificazione dei punti critici: punti $p \in C$ che minimizzano la \textit(clearance) localmente. In teoria corrispondono ai passaggi stretti e alle porte.\\\\
-        L'approccio proposto da \cite{mora}, e utilizzato in questo lavoro, si basa sugli stessi concetti base dell'algoritmo di Voronoi, ma con alcune modifiche per migliorare la qualità dei risultati. In particolare, analizza sia lo spazio libero, ricercando i punti critici che chiama \textit{intersection points}, sia lo spazio occupato, ricercando gli \textit{endpoints} di ogni ramo del diagramma di Voronoi dello spazio occupato. Questi dati sono successivamente utilizzati per individuare le linee critiche e separare quindi le regioni.
+        Il diagramma di Voronoi è l'insieme dei punti $p \in C$ che hanno almeno due punti base equidistanti diversi;
+  \item Identificazione dei punti critici: punti $p \in C$ che minimizzano la \textit{clearance} localmente. In teoria corrispondono ai passaggi stretti e alle porte.\\\\
+        L'approccio proposto da \cite{mora}, e utilizzato in questo lavoro, si basa sugli stessi concetti base dell'algoritmo di Voronoi, ma con alcune modifiche per migliorare la qualità dei risultati. In particolare, analizza sia lo \textbf{spazio libero}, ricercando i punti critici che chiama \textit{intersection points}, sia lo \textbf{spazio occupato}, ricercando gli \textit{endpoints} di ogni ramo del diagramma di Voronoi dello spazio occupato. Questi dati sono successivamente utilizzati per individuare le linee critiche e separare quindi le regioni.
 \end{itemize}
 \begin{figure}[H]
   \centering
@@ -145,10 +145,10 @@ Viene applicato un processo di dilatazione con un elemento strutturante quadrato
 \end{figure}
 
 \subsection{Analisi dello spazio libero}
-L'obiettivo di questa fase è quello di individuare i punti critici e le linee critiche che giacciono in corrispondenza dei passaggi stretti.
+L'obiettivo di questa fase è quello di \textbf{individuare i punti critici} e le linee critiche che giacciono in corrispondenza dei passaggi stretti.
 
 \subsubsection{Diagramma di Voronoi}
-Innanzitutto si procede con il determinare il diagramma di Voronoi dello spazio libero. Nel paper originale viene utilizzato lo scheletro della mappa binaria come approssimazione di Voronoi. In questo lavoro, viene invece utilizzata la trasformata asse mediano poichè si è notato che fornisce risultati migliori.
+Si procede con il determinare il diagramma di Voronoi dello spazio libero. Nel paper originale viene utilizzato lo scheletro della mappa binaria come approssimazione di Voronoi. In questo lavoro, viene invece utilizzata la \textbf{trasformata asse mediano} poichè si è empiricamente notato che fornisce risultati migliori.
 
 \subsubsection{Branching}
 Si individuano nel diagramma di Voronoi i punti di branching ovvero i punti dove il diagramma si biforca. Per individuarli si utilizza la trasformata HIT or MISS con i kernels 3x3 seguenti:
@@ -164,10 +164,10 @@ Si individuano nel diagramma di Voronoi i punti di branching ovvero i punti dove
     \includegraphics[width=0.9\textwidth]{room_recognition/mora/branching_points_kernels_2.png}
     \caption{Kernels per i branch a Y}
   \end{subfigure}\\
-  \caption{In nero i valori -1, in grigio i valori 0 e in bianco i valori 1 dei kernels}
+  \caption{Kernels per l'individuazione dei punti di branch. In nero i valori -1, in grigio i valori 0 e in bianco i valori 1 dei kernels}
 \end{figure}
 \noindent
-Successivamente si procede con la rimozione dei punti di branch dal diagramma di Voronoi e si effettua il labeling delle componenti connesse, in modo da poter individuare ogni ramo del diagramma. I rami il cui numero di pixels è inferiore a dieci pixels vengono eliminati.
+Successivamente si procede con la rimozione dei punti di branch dal diagramma di Voronoi e si effettua il {labeling delle componenti connesse}, in modo da poter individuare ogni ramo del diagramma. I rami il cui numero di pixels è inferiore a dieci pixels vengono eliminati.
 \begin{figure}[H]
   \centering
 
@@ -191,6 +191,7 @@ Successivamente si procede con la rimozione dei punti di branch dal diagramma di
     \includegraphics[width=0.98\textwidth]{room_recognition/mora/free_space_diagram_branches_labeling.png}
     \caption{Labeling delle componenti connesse dell'immagine {(c)}}
   \end{subfigure}
+  \caption{Processo di individuazione dei punti di branch}
 \end{figure}
 
 \subsubsection{Ricerca dei segmenti}
@@ -199,7 +200,7 @@ Un segmento è definito come l'insieme di punti del branch che hanno una clearan
 \begin{equation}
   \text{segmento} = \{p \mid | \text{clearance}(p) - \text{clearance}_{\text{min}} | \leq 2\}
 \end{equation}
-A supporto dell'individuazione dei segmenti, si calcola la trasformata distanza che assegna ad ogni pixel il valore della distanza minima da un pixel dello spazio occupato e si utilizza per calcolare la clearance di ogni punto del branch.\\Per ogni segmento si salva centroide e orientamento.
+A supporto dell'individuazione dei segmenti, si calcola la \textbf{trasformata distanza} che assegna a ogni pixel il valore della distanza minima da un pixel dello spazio occupato e si utilizza per calcolare la clearance di ogni punto del branch.\\Per ogni segmento si salva centroide e orientamento.
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.441\textwidth]{room_recognition/mora/free_space_distance_tr.png}
@@ -292,10 +293,10 @@ Per ogni segmento si determinano quindi gli intersection points i quali delimita
 \subsection{Analisi dello spazio occupato}
 L'obiettivo di questa fase è quello di individuare i cosidetti endpoints, ovvero i punti che delimitano i rami del diagramma di Voronoi dello spazio occupato. Questi punti sono utili per scremare dalle linee critiche quelle che non sono effettivamente delle porte, come verrà illustrato nella sezione successiva
 \subsubsection{Diagramma di Voronoi}
-Così come per lo spazio libero, anche per lo spazio occupato viene determinato il diagramma di Voronoi approssimato alla trasformata asse mediano. Si ottiene dunque una foresta di diagramma di Voronoi ognuno dei quali corrisponde ad una zona occupata diversa. \\
-I diagrammi con meno di 20 pixels vengono scartati, in modo da rimuovere i diagrammi relativi le piccole zone che normalmente corrispondono a errori di mappattura dovuti al rumore.
+Così come per lo spazio libero, anche per lo spazio occupato viene determinato il diagramma di Voronoi approssimato alla \textbf{trasformata asse mediano}. Si ottiene dunque una foresta di diagrammi di Voronoi,ognuno dei quali corrisponde a una zona occupata diversa. \\
+I diagrammi con meno di 20 pixels vengono scartati, in modo da rimuovere i diagrammi relativi alle piccole zone che normalmente corrispondono a errori di mappattura dovuti al rumore.
 
-\begin{figure}
+\begin{figure}[H]
   \centering
   \begin{subfigure}[t]{0.45\textwidth}
     \centering
@@ -324,16 +325,17 @@ I diagrammi di voronoi estratti dallo spazio occupato sono utili per la ricerca 
 \subsection{Ricerca delle porte}
 Le porte sono definite come passaggi stretti nello spazio libero dove vi è la presenza di protuberanze dello spazio occupato.\\
 Utilizzando entrambe le tipologie di informazioni estrapolate negli step precedenti, è possibile individuare in modo abbastanza preciso le linee critiche che effettivamente dividono due stanze. \\\\
-Il primo passo è quello di individuare, per ciascuno intersection point dello spazio libero, l'endpoint dello spazio occupato più vicino. Unendo gli endpoint $ce1, ce2$ più vicini rispettivamente al primo e al secondo intersection point, si ottiene un'ulteriore linea $\overline{ce_1ce_2}$.\\
+Il primo passo è quello di individuare, per ciascun intersection point dello spazio libero, l'endpoint dello spazio occupato più vicino. Unendo gli endpoint $ce1, ce2$ più vicini rispettivamente al primo e al secondo intersection point, si ottiene un'ulteriore linea $\overline{ce_1ce_2}$.\\
 
 Infine, se:
 \begin{itemize}
   \item $distance(ip_1, ce_1) \leq \frac{threshold}{2}$
   \item $distance(ip_2, ce_2) \leq \frac{threshold}{2}$
   \item $distance(ip_{centroid}, ce_{centroid}) \leq threshold$
+  \item il segmento $\overline{ip_1ip_2}$ non interseca alcun diagramma di Voronoi dello spazio occupato
 \end{itemize}
-e il segmento $\overline{ip_1ip_2}$ non interseca alcun diagramma di Voronoi dello spazio occupato, allora questo raprpesenta una door location valida.\\\\
-Il vantaggio di questa approccio è che la soglia \textit{threshold} non è fissa: rappresenta infatti ma viene calcolata per ogni mappa come la media dei valori della trasformata distanza dello spazio occupato nei punti dove è presente il suo diagramma di Voronoi, moltiplicata per due.
+Allora questo rappresenta una door location valida.\\\\
+Uno dei vantaggi di questa approccio è che la soglia \textit{threshold} non è fissa: viene infatti calcolata per ogni mappa come la media dei valori della trasformata distanza dello spazio occupato nei punti dove è presente il suo diagramma di Voronoi, moltiplicata per due. Rappresenta la larghezza media dei muri nella mappa analizzata.
 \begin{figure}
   \centering
   \begin{subfigure}[t]{0.45\textwidth}
@@ -358,7 +360,7 @@ Come si può notare, ci sono delle incorrettezze. Tuttavia, queste possono esser
 
 \subsection{Generazione Grafo delle Stanze}
 Il grafo delle stanze viene generato a partire dalle stanze separate e dai segmenti validi.\\\\
-Viene creato un nodo per ogni stanza individuata. La lista di segmenti rappresentante il perimetro della stanza viene determinata approssimando il contorno della maschera della stanza con l'algoritmo di Ramer–Douglas–Peucker implementato in OpenCV.\\
+Viene creato un nodo per ogni stanza individuata. La \textbf{lista di segmenti} rappresentante il perimetro della stanza viene determinata approssimando il contorno della maschera della stanza con l'\textbf{algoritmo di Ramer–Douglas–Peucker} implementato in OpenCV.\\
 Per ogni segmento valido, si controlla la label di appartenenza degli estremi del segmento che teoricamente giacciono in due stanze diverse, e si crea un arco tra i due nodi delle stanze corrispondenti. \\
 Infine se eliminano i nodi che non sono connessi a nessun arco, rimuovendo così le stanze isolate che per definizione non dovrebbero esistere.
 \begin{figure}[H]
@@ -391,7 +393,7 @@ Infine se eliminano i nodi che non sono connessi a nessun arco, rimuovendo così
 \section{Visualizzazione e Modifica delle Stanze}
 Affinchè l'utente possa visualizzare i risultati del riconoscimento e modificare la divisione in stanze aggiugendone di nuove, eliminandone o modificandone di esistenti, è stato sviluppato un tool grafico all'interno della webapp già esistente per la gestione di Robee, la cosidetta \textit{console}. Il funzionamento della console esula dagli obiettivi di questa tesi, tuttavia è importante illustrare come è stata integrata la funzionalità di visualizzazione e modifica delle stanze all'interno di essa.
 \subsection{Layers e modelli}
-A supporto di tale feature sono stati creati dei modelli per rappresentare un generico \textit{layer} della mappa, anche in vista di futuri sviluppi, composto da una lista di \textit{layer area} che rappresentano delle zone all'interno della mappa. Infine la classe \textit{layer area outline} rappresenta il contorno di una layer area.
+A supporto di tale feature sono stati creati dei modelli per rappresentare un generico \textit{layer} della mappa, anche in vista di futuri sviluppi, composto da una lista di \textit{layer area} che rappresentano delle zone all'interno della mappa. La classe \textit{layer area outline} rappresenta il contorno di una layer area.
 \begin{figure}[H]
   \centering
   \scalebox{0.84}{
@@ -427,8 +429,8 @@ Per la gestione delle stanze, ogni layer area rappresenta il poligono della stan
   \includegraphics[width=0.95\textwidth]{room_recognition/console_data_flow.png}
   \caption{Schema di funzionamento per la visualizzazione e modifica delle stanze}
 \end{figure}
-Console Service è la webapp per la gestione di Robee, sviluppato con Python, Tornado, Turbo e Stimulus JS e che sfrutta il pattern MVC.\\
-Quando un utente visita la pagina per la visualizzazione di una mappa, il server scarica l'immagine della mappa e costruisce l'html dal template iniettando i dati necessari e restituendo la pagina all'utente.\\ Successivamente, quando questo seleziona la visualizzazione del layer delle stanze dal menu a tendina, il client effettua una chiamata http GET /rooms al server che esegue una query al db, costruisce i modelli e li restituisce al client che renderizza i poligoni delle stanze in un canvas sovrapposto all'immagine della mappa.\\
+Console Service è la webapp per la gestione di Robee, sviluppata con Python, Tornado, Turbo e Stimulus JS e che sfrutta il pattern MVC.\\\\
+Quando un utente visita la pagina per la visualizzazione di una mappa, il server scarica l'immagine della mappa e costruisce l'html dal template iniettando i dati necessari e restituendo la pagina all'utente.\\ Successivamente, quando questo seleziona la visualizzazione del layer delle stanze dal menu a tendina, il client effettua una chiamata http \apiurl{GET /rooms} al server che esegue una query al db, costruisce i modelli e li restituisce al client che renderizza i poligoni delle stanze in un canvas sovrapposto all'immagine della mappa.\\
 \subsection{Features}
 \begin{figure}[H]
   \centering
@@ -438,7 +440,7 @@ Quando un utente visita la pagina per la visualizzazione di una mappa, il server
 
 \protect
 \subsubsection{Taglio di una stanza}
-Selezionando la modalità \textit{cut} e cliccando su due punti del poligono, si effettua un taglio della stanza in due nuove stanze.
+Selezionando la modalità \textit{cut} e cliccando su due punti del contorno del poligono di una stanza, la si taglia, creandone due nuove.
 \begin{figure}[H]
   \begin{subfigure}[t]{0.50\textwidth}
     \centering
@@ -452,7 +454,7 @@ Selezionando la modalità \textit{cut} e cliccando su due punti del poligono, si
 
 \protect
 \subsubsection{Nuovo punto nel poligono di una stanza}
-Selezionando la modalità \textit{add}, dopo aver selezionato un punto del poligono con un doppio click è possibile creare un nuovo punto successivo a quello selezionato precedentemente.
+Selezionando la modalità \textit{add}, dopo aver selezionato un punto del poligono, con un doppio click è possibile creare un nuovo punto successivo a quello selezionato precedentemente.
 \begin{figure}[H]
   \begin{subfigure}[t]{0.50\textwidth}
     \centering
@@ -466,7 +468,7 @@ Selezionando la modalità \textit{add}, dopo aver selezionato un punto del polig
 
 \protect
 \subsubsection{Eliminazione di una stanza}
-Selezionando la modalità \textit{delete}, è possibile eliminare una stanza cliccando su una qualsiasi parte di essa
+Selezionando la modalità \textit{delete}, è possibile eliminare una stanza cliccando su una qualsiasi parte di essa.
 \begin{figure}[H]
   \begin{subfigure}[t]{0.50\textwidth}
     \centering
@@ -507,4 +509,4 @@ Selezionando la modalità \textit{move}, è possibile spostare un punto del poli
 \end{figure}
 
 \section{Conclusioni}
-In questo capitolo è stato affrontanto il processo di riconoscimento delle stanze a partire dalle mappe SLAM generate dai sensori LIDAR del robot. In particolare, è stato presentato il processo di individuazione proposto da \cite{mora} e basato su Voronoi \cite{thrun} che, prima dell'implementazione sembrava molto preciso ed efficace ma che tuttavia così non si è rivelato. Per questo motivo è stato sviluppato uno strumento che oltre alla classica visualizzazione dei risultati consente anche di modificare la disposizione delle stanze, come i classici strumenti di annotazione delle immagini. Le annotazioni delle stanze corrette, in futuro, potranno essere utilizzati come dati di training di un modello ML apposito.
+In questo capitolo è stato affrontanto il processo di \textbf{riconoscimento delle stanze} a partire dalle mappe SLAM generate dai sensori LIDAR del robot. In particolare, è stato presentato il processo di individuazione proposto da \cite{mora} e basato su \textbf{Voronoi} \cite{thrun} che, prima dell'implementazione sembrava molto preciso ed efficace ma che tuttavia così non si è rivelato. Per questo motivo è stato sviluppato uno strumento che oltre alla classica visualizzazione dei risultati consente anche di \textbf{modificare la disposizione delle stanze}, come i classici strumenti di annotazione delle immagini. Le \textbf{annotazioni} delle stanze corrette, in futuro, potranno essere utilizzati come dati di \textbf{training} di un modello di machine learning apposito.\\Inoltre si potrebbe pensare di sperimentare tecniche di riduzione del rumore più avanzate, come proposto da \cite{rose}

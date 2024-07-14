@@ -3,7 +3,7 @@ In questa sezione dell'appendice verranno riportate tutte le informazioni che no
 
 \section{Classi oggetto e predicati}
 
-\subsection{Predicati}
+\subsection{Predicati}\label{appendix:psgtr-predicates}
 \begin{center}
   \begin{supertabular}{|l|l|l|l|}
     \hline
@@ -25,7 +25,7 @@ In questa sezione dell'appendice verranno riportate tutte le informazioni che no
   \end{supertabular}
 \end{center}
 
-\subsection{Classi oggetto}
+\subsection{Classi oggetto}\label{appendix:psgtr-classes}
 \twocolumn
 \tablehead{%
   \hline
@@ -173,9 +173,193 @@ In questa sezione dell'appendice verranno riportate tutte le informazioni che no
 \pagebreak
 \onecolumn
 
-
-\section{Blacklist delle Classi oggetto}
-
-\section{Configurazione del servizio di scene perception}
+\section{Configurazione di Scene Perception}
+Ogni servizio ha una configurazione che permette di modificare i parametri utilizzati dal servizio stesso. Esistono vari livelli di configurazione: globali e specifici per robot. I secondi, se presenti, sovrascrivono i primi. Di seguito verranno elencati i parametri configurabili per il servizio di scene perception.\\
+\vspace{1em}
+\tablehead{%
+  \hline
+  \textbf{Parametro} & \textbf{Descrizione} & \textbf{Valore di Default} \\
+  \hline}
+\begin{supertabular}{|l|l|l|}
+  device & \makecell[l]{Specifica il device torch da utilizzare} & \tiny{CPU} \\
+  \hline
+  camera to use & \makecell[l]{Specifica la camera da utilizzare per\\ la percezione della scena} & \tiny{HEAD} \\
+  \hline
+  position reference & \makecell[l]{Specifica il riferimento da utilizzare\\ per la posizione} & \tiny{MAP} \\
+  \hline
+  distance thresholds & \makecell[l]{Specifica le distanze massime e\\ minime per considerare un oggetto} & \begin{tabular}{l|l}
+    max & 3.0 \\\hline min & 0.1 \\\hline frame max & 1.0
+  \end{tabular} \\
+  \hline
+  \makecell[l]{relation inference\\ threshold} & \makecell[l]{Specifica la soglia per l'inferenza\\ delle relazioni} & 0.5 \\
+  \hline
+  banned labels & \makecell[l]{Specifica le classi oggetto da non\\ considerare} & \makecell[l]{ceiling-merged \\ floor-merged \\ floor-other-merged \\ sky-other-merged} \\
+  \hline
+\end{supertabular}
 
 \section{Esempi}
+
+\subsubsection{Esempio di Scene Graph con la bottiglia}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{scene_graph/scene_w_bottle.jpeg}
+\end{figure}
+\begin{lstlisting}[language=json]
+  
+  {
+    "nodes": [
+      {
+        "id": "42cfc1c2-1af9-4792-9684-d87a6b5b7788",
+        "label": "sports ball",
+        "position": [571.0, 847.0]
+      },
+      {
+        "id": "234dcfd5-a1a3-48e4-b4d3-4b24657cfdcd",
+        "label": "wall-tile",
+        "position": [517.0, 658.0]
+      },
+      {
+        "id": "3cb092ea-e56a-4278-ba5d-6522d8b6b92d",
+        "label": "bottle",
+        "position": [429.0, 385.0]
+      },
+      {
+        "id": "91eaceab-981a-4447-a6a5-ec8b1d35ea94",
+        "label": "floor-other-merged",
+        "position": [402.0, 707.0]
+      },
+      {
+        "id": "6250ce0a-c332-41bb-a8d6-422ad4033a7e",
+        "label": "book",
+        "position": [729.0, 469.0]
+      }
+    ],
+    "edges": [
+      {
+        "source": "3cb092ea-e56a-4278-ba5d-6522d8b6b92d",
+        "target": "6250ce0a-c332-41bb-a8d6-422ad4033a7e",
+        "label": "on"
+      },
+      {
+        "source": "6250ce0a-c332-41bb-a8d6-422ad4033a7e",
+        "target": "3cb092ea-e56a-4278-ba5d-6522d8b6b92d",
+        "label": "under"
+      },
+      {
+        "source": "91eaceab-981a-4447-a6a5-ec8b1d35ea94",
+        "target": "6250ce0a-c332-41bb-a8d6-422ad4033a7e",
+        "label": "under"
+      },
+      {
+        "source": "6250ce0a-c332-41bb-a8d6-422ad4033a7e",
+        "target": "91eaceab-981a-4447-a6a5-ec8b1d35ea94",
+        "label": "on"
+      },
+      {
+        "source": "91eaceab-981a-4447-a6a5-ec8b1d35ea94",
+        "target": "42cfc1c2-1af9-4792-9684-d87a6b5b7788",
+        "label": "under"
+      },
+      {
+        "source": "42cfc1c2-1af9-4792-9684-d87a6b5b7788",
+        "target": "91eaceab-981a-4447-a6a5-ec8b1d35ea94",
+        "label": "on"
+      },
+      {
+        "source": "91eaceab-981a-4447-a6a5-ec8b1d35ea94",
+        "target": "234dcfd5-a1a3-48e4-b4d3-4b24657cfdcd",
+        "label": "attached to"
+      },
+      {
+        "source": "234dcfd5-a1a3-48e4-b4d3-4b24657cfdcd",
+        "target": "91eaceab-981a-4447-a6a5-ec8b1d35ea94",
+        "label": "attached to"
+      },
+      {
+        "source": "3cb092ea-e56a-4278-ba5d-6522d8b6b92d",
+        "target": "42cfc1c2-1af9-4792-9684-d87a6b5b7788",
+        "label": "beside"
+      },
+      {
+        "source": "42cfc1c2-1af9-4792-9684-d87a6b5b7788",
+        "target": "3cb092ea-e56a-4278-ba5d-6522d8b6b92d",
+        "label": "beside"
+      }
+    ]
+  }
+\end{lstlisting}
+
+\subsubsection{Esempio di Scene Graph senza la bottiglia}
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{scene_graph/scene_wo_bottle.jpeg}
+\end{figure}
+\begin{lstlisting}[language=json]
+  
+  {
+    "nodes": [
+      {
+        "id": "d070cec3-b540-4523-92b2-dccd13c76d0a",
+        "label": "book",
+        "position": [682.0, 489.0]
+      },
+      {
+        "id": "da16647a-f0b2-49b1-bbcd-308974136112",
+        "label": "sports ball",
+        "position": [555.0, 875.0]
+      },
+      {
+        "id": "ace5c7a0-049e-46d6-92ed-26f8d900f551",
+        "label": "wall-tile",
+        "position": [473.0, 592.0]
+      },
+      {
+        "id": "717fa745-ed21-4153-9c35-f0cb5f277deb",
+        "label": "floor-other-merged",
+        "position": [425.0, 678.0]
+      }
+    ],
+    "edges": [
+      {
+        "source": "717fa745-ed21-4153-9c35-f0cb5f277deb",
+        "target": "d070cec3-b540-4523-92b2-dccd13c76d0a",
+        "label": "under"
+      },
+      {
+        "source": "d070cec3-b540-4523-92b2-dccd13c76d0a",
+        "target": "717fa745-ed21-4153-9c35-f0cb5f277deb",
+        "label": "on"
+      },
+      {
+        "source": "717fa745-ed21-4153-9c35-f0cb5f277deb",
+        "target": "da16647a-f0b2-49b1-bbcd-308974136112",
+        "label": "under"
+      },
+      {
+        "source": "da16647a-f0b2-49b1-bbcd-308974136112",
+        "target": "717fa745-ed21-4153-9c35-f0cb5f277deb",
+        "label": "on"
+      },
+      {
+        "source": "da16647a-f0b2-49b1-bbcd-308974136112",
+        "target": "d070cec3-b540-4523-92b2-dccd13c76d0a",
+        "label": "beside"
+      },
+      {
+        "source": "d070cec3-b540-4523-92b2-dccd13c76d0a",
+        "target": "da16647a-f0b2-49b1-bbcd-308974136112",
+        "label": "beside"
+      },
+      {
+        "source": "ace5c7a0-049e-46d6-92ed-26f8d900f551",
+        "target": "717fa745-ed21-4153-9c35-f0cb5f277deb",
+        "label": "attached to"
+      },
+      {
+        "source": "717fa745-ed21-4153-9c35-f0cb5f277deb",
+        "target": "ace5c7a0-049e-46d6-92ed-26f8d900f551",
+        "label": "attached to"
+      }
+    ]
+  }
+\end{lstlisting}

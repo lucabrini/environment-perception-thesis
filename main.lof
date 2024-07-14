@@ -2,37 +2,38 @@
 \babel@toc {italian}{}\relax 
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {2.1}{\ignorespaces Ambiente e relativa mappa semantica. }}{4}{figure.caption.4}%
-\contentsline {figure}{\numberline {2.2}{\ignorespaces Diagramma delle classi - Nodo Oggetto}}{5}{figure.caption.6}%
-\contentsline {figure}{\numberline {2.3}{\ignorespaces Diagramma delle classi - Nodo Tag}}{5}{figure.caption.8}%
-\contentsline {figure}{\numberline {2.4}{\ignorespaces Diagramma delle classi - Nodo Stanza}}{6}{figure.caption.10}%
-\contentsline {figure}{\numberline {2.5}{\ignorespaces Mappa Semantica}}{7}{figure.caption.13}%
+\contentsline {figure}{\numberline {2.1}{\ignorespaces Ambiente e relativa mappa semantica. }}{4}{figure.caption.5}%
+\contentsline {figure}{\numberline {2.2}{\ignorespaces Diagramma delle classi - Nodo Oggetto}}{5}{figure.caption.7}%
+\contentsline {figure}{\numberline {2.3}{\ignorespaces Diagramma delle classi - Nodo Tag}}{5}{figure.caption.9}%
+\contentsline {figure}{\numberline {2.4}{\ignorespaces Diagramma delle classi - Nodo Stanza}}{6}{figure.caption.11}%
+\contentsline {figure}{\numberline {2.5}{\ignorespaces Mappa Semantica}}{8}{figure.caption.14}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {3.1}{\ignorespaces Schema dei flussi dati per la generazione del grafo di scena e aggiornamento della mappa semantica }}{9}{figure.caption.15}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces \relax }}{10}{figure.caption.16}%
-\contentsline {figure}{\numberline {3.3}{\ignorespaces Confronto delle Panoptic Quality tra PSGTr PSGFormer Mask DINO}}{12}{figure.caption.24}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces Sistema di coordinate pixel}}{14}{figure.caption.29}%
-\contentsline {figure}{\numberline {3.5}{\ignorespaces Sistema di coordinate camera}}{15}{figure.caption.31}%
-\contentsline {figure}{\numberline {3.7}{\ignorespaces Camera Frustum. I vertici del piano verde rappresentano la proiezione degli estremi del frame nel sistema di coordinate mappa.}}{20}{figure.caption.40}%
-\contentsline {figure}{\numberline {3.8}{\ignorespaces Classe Plane}}{22}{figure.caption.43}%
-\contentsline {figure}{\numberline {3.9}{\ignorespaces Controllo appartenenza di un punto al frustum. I punti verdi giacciono all'interno del frustum, i punti rossi all'esterno. }}{23}{figure.caption.45}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Schema di funzionamento per la generazione del grafo di scena e aggiornamento della mappa semantica }}{9}{figure.caption.16}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces \relax }}{10}{figure.caption.17}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Confronto delle Panoptic Quality tra PSGTr PSGFormer Mask DINO}}{12}{figure.caption.25}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Sistema di coordinate pixel}}{14}{figure.caption.30}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Sistema di coordinate camera}}{15}{figure.caption.32}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces Camera Frustum. I vertici del piano verde rappresentano la proiezione degli estremi del frame nel sistema di coordinate mappa.}}{20}{figure.caption.41}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces Classe Plane}}{22}{figure.caption.44}%
+\contentsline {figure}{\numberline {3.9}{\ignorespaces Controllo appartenenza di un punto al frustum. I punti verdi giacciono all'interno del frustum, i punti rossi all'esterno. }}{23}{figure.caption.46}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces Schema dei flussi dati per il riconoscimento delle stanze e il salvataggio del grafo delle stanze}}{27}{figure.caption.50}%
-\contentsline {figure}{\numberline {4.2}{\ignorespaces Esempio di occupancy grid map utilizzata dal modulo di navigazione del robot}}{28}{figure.caption.51}%
-\contentsline {figure}{\numberline {4.3}{\ignorespaces Esempio di riconoscimento delle stanze tramite l'algoritmo di Voronoi originale \blx@tocontentsinit {0}\cite {thrun}}}{30}{figure.caption.52}%
-\contentsline {figure}{\numberline {4.6}{\ignorespaces In nero i valori -1, in grigio i valori 0 e in bianco i valori 1 dei kernels}}{32}{figure.caption.61}%
-\contentsline {figure}{\numberline {4.8}{\ignorespaces Trasformata distanza dello spazio libero}}{34}{figure.caption.64}%
-\contentsline {figure}{\numberline {4.9}{\ignorespaces Calcolo dell'orientamento del segmento. I quadrati in blu rappresentano i pixel del segmento}}{35}{figure.caption.66}%
-\contentsline {figure}{\numberline {4.10}{\ignorespaces Segmenti e intersection points. In rosso i segmenti, in verde le linee critiche delimitate dagli intersection points, in blu il diagramma di Voronoi}}{36}{figure.caption.68}%
-\contentsline {figure}{\numberline {4.12}{\ignorespaces In nero i valori -1, in grigio i valori 0 e in bianco i valori 1 dei kernels}}{37}{figure.caption.72}%
-\contentsline {figure}{\numberline {4.13}{\ignorespaces Diagramma di Voronoi dello spazio occupato con gli endpoints evidenziati in rosso}}{38}{figure.caption.73}%
-\contentsline {figure}{\numberline {4.15}{\ignorespaces Stanze separate}}{39}{figure.caption.75}%
-\contentsline {figure}{\numberline {4.16}{\ignorespaces Grafo delle stanze generato a partire dalle stanze separate}}{40}{figure.caption.76}%
-\contentsline {figure}{\numberline {4.17}{\ignorespaces Classi per la gestione dei layer}}{41}{figure.caption.77}%
-\contentsline {figure}{\numberline {4.18}{\ignorespaces Schema di funzionamento per la visualizzazione e modifica delle stanze}}{41}{figure.caption.78}%
-\contentsline {figure}{\numberline {4.19}{\ignorespaces Pagina di visualizzazione delle stanze}}{42}{figure.caption.79}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Schema dei funzionamento per il riconoscimento delle stanze e il salvataggio del grafo delle stanze}}{27}{figure.caption.51}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Esempio di occupancy grid map utilizzata dal modulo di navigazione del robot}}{28}{figure.caption.52}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Esempio di riconoscimento delle stanze tramite l'algoritmo di Voronoi originale \blx@tocontentsinit {0}\cite {thrun}}}{30}{figure.caption.53}%
+\contentsline {figure}{\numberline {4.6}{\ignorespaces Kernels per l'individuazione dei punti di branch. In nero i valori -1, in grigio i valori 0 e in bianco i valori 1 dei kernels}}{33}{figure.caption.62}%
+\contentsline {figure}{\numberline {4.7}{\ignorespaces Processo di individuazione dei punti di branch}}{34}{figure.caption.63}%
+\contentsline {figure}{\numberline {4.8}{\ignorespaces Trasformata distanza dello spazio libero}}{35}{figure.caption.65}%
+\contentsline {figure}{\numberline {4.9}{\ignorespaces Calcolo dell'orientamento del segmento. I quadrati in blu rappresentano i pixel del segmento}}{36}{figure.caption.67}%
+\contentsline {figure}{\numberline {4.10}{\ignorespaces Segmenti e intersection points. In rosso i segmenti, in verde le linee critiche delimitate dagli intersection points, in blu il diagramma di Voronoi}}{37}{figure.caption.69}%
+\contentsline {figure}{\numberline {4.12}{\ignorespaces In nero i valori -1, in grigio i valori 0 e in bianco i valori 1 dei kernels}}{38}{figure.caption.73}%
+\contentsline {figure}{\numberline {4.13}{\ignorespaces Diagramma di Voronoi dello spazio occupato con gli endpoints evidenziati in rosso}}{39}{figure.caption.74}%
+\contentsline {figure}{\numberline {4.15}{\ignorespaces Stanze separate}}{41}{figure.caption.76}%
+\contentsline {figure}{\numberline {4.16}{\ignorespaces Grafo delle stanze generato a partire dalle stanze separate}}{42}{figure.caption.77}%
+\contentsline {figure}{\numberline {4.17}{\ignorespaces Classi per la gestione dei layer}}{42}{figure.caption.78}%
+\contentsline {figure}{\numberline {4.18}{\ignorespaces Schema di funzionamento per la visualizzazione e modifica delle stanze}}{43}{figure.caption.79}%
+\contentsline {figure}{\numberline {4.19}{\ignorespaces Pagina di visualizzazione delle stanze}}{43}{figure.caption.80}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {A.1}{\ignorespaces Robee in versione 18}}{48}{figure.caption.91}%
+\contentsline {figure}{\numberline {A.1}{\ignorespaces Robee in versione 18}}{50}{figure.caption.92}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }

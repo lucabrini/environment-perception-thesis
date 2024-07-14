@@ -1,5 +1,5 @@
 Gli esseri umani, talvolta senza rendersene conto, riescono a integrare continuamente nuove informazioni riguardo l'ambiente che li circonda, sia esso una casa, un edificio pubblico o un parco. Questa capacità, conscia e inconscia, è essenziale per la successiva pianificazione di quei obiettivi o movimenti basati sulle informazioni appena apprese. \\
-Così come per gli essere umani, anche i robot hanno bisogno di informazioni per poter essere considerati "cognitivi" e pianificare rispetto alla propria base di conoscenza. In particolar modo quando l'obiettivo è pianificare missioni data la descrizione in linguaggio in naturale di ciò che il robot deve fare, come in questo caso.
+Così come per gli esseri umani, anche i robot hanno bisogno di informazioni per poter essere considerati "cognitivi" e pianificare rispetto alla propria base di conoscenza. In particolar modo quando l'obiettivo è pianificare missioni data la descrizione in linguaggio in naturale di ciò che il robot deve fare, come in questo caso.
 
 \paragraph*{Esempio}
 Consideriamo una persona che entra per la prima volta in una biblioteca. Egli osserva scaffali pieni di libri, tavoli per lo studio e un'area dedicata ai computer. Queste informazioni vengono immagazzinate e utilizzate successivamente per trovare un libro specifico o un luogo tranquillo per studiare.\\
@@ -19,10 +19,10 @@ La Mappa Semantica è un grafo orientato $G_m = (V_m, E_m)$ che rappresenta ques
         \begin{itemize}
           \item La relazione tra due oggetti;
           \item Il collegamento tra due stanze;
-          \item L'appartenenza di un oggetto o un tag ad una ed una sola stanza.
+          \item L'appartenenza di un oggetto o un tag a una e una sola stanza.
         \end{itemize}
 \end{itemize}
-Di conseguenza, per trovare gli oggetti o i nodi appartenenti ad una stanza $s$ è sufficiente considerare il sottografo del nodo stanza $s$.
+Di conseguenza, per trovare gli oggetti o i nodi appartenenti a una stanza $s$ è sufficiente considerare il sottografo del nodo stanza $s$.
 
 \begin{figure}[h]
   \begin{subfigure}[t]{0.45\textwidth}
@@ -75,7 +75,7 @@ Di conseguenza, per trovare gli oggetti o i nodi appartenenti ad una stanza $s$ 
 I nodi oggetto rappresentano gli oggetti riconosciuti all'interno dell'ambiente attraverso la segmentazione panoptica dei frame video proveniente dalle camere del robot. Ogni nodo oggetto ha i seguenti attributi:
 \begin{itemize}
   \item Identificativo: utilizzato per identificare un oggetto all'interno della Mappa Semantica;
-  \item Nome: label inferita dal modello di segmentazione panoptica;
+  \item Nome: label inferita dal modello di segmentazione panoptica. Per l'elenco delle classi consultare l'Appendice \ref{appendix:psgtr-classes};
   \item Posizione: terna $(x, y, z)$ rappresentante la posizione dell'oggetto all'interno dell'ambiente rispetto alla Reference Posizione;
   \item Reference Posizione: origine del sistema di riferimento delle posizioni degli oggetti. Può essere l'origine del sistema Mappa o l'origine del sistema Robot;
   \item Tipo: rappresenta la tipologia dell'oggetto che può essere scelta tra:
@@ -104,7 +104,7 @@ I nodi oggetto vengono aggiornati con le inferenze di nuovi frame video: possono
 I nodi tag rappresentano tutti quei riferimenti che vengono utilizzati dal robot per localizzarsi o localizzare oggetti di particolare rilevanza (come la stazione di ricarica o il tavolo di lavoro). Ogni nodo tag ha i seguenti attributi:
 \begin{itemize}
   \item Identificativo: utilizzato per identificare il tag all'interno della Mappa Semantica;
-  \item Nome: assegnato dall'utente;
+  \item Nome: assegnato dall'utente.;
   \item Posizione: terna $(x, y, z)$ rappresentante la posizione del tag all'interno dell'ambiente rispetto all'origine della mappa;
   \item Dimensione: dimensione del tag in millimetri;
   \item Di Navigazione: flag che indica se il tag è utilizzato per la navigazione del robot;
@@ -124,12 +124,12 @@ I nodi tag sono permanenti all'interno della mappa semantica perché si assume c
 \end{figure}
 
 \subsubsection{Nodi stanza}
-I nodi stanza rappresentano un'area semantica all'interno della mappa slam generata attraverso i sensori LiDaR del robot che, data in input ad un algormito, questo individua le stanze e ne genera il poligono.
+I nodi stanza rappresentano un'area semantica all'interno della mappa slam generata attraverso i sensori LiDaR del robot che, data in input a un algoritmo, questo individua le stanze e ne genera il poligono.
 Ogni nodo stanza ha i seguenti attributi:
 \begin{itemize}
   \item Identificativo: utilizzato per identificare la stanza all'interno della Mappa Semantica;
   \item Nome: assegnato dall'utente;
-  \item Segmenti: Lista di segmenti che delimitano il poligono della stanza. Viene usato per verificare se un oggetto appartiene ad una stanza o no;
+  \item Segmenti: Lista di segmenti che delimitano il poligono della stanza. Viene usato per verificare se un oggetto appartiene a una stanza o no;
   \item Oggetti: Sottografo degli oggetti appartenenti alla stanza.
 \end{itemize}
 La presenza di queste aree nella mappa è fondamentale per diverse ragioni:
@@ -153,7 +153,7 @@ La presenza di queste aree nella mappa è fondamentale per diverse ragioni:
 \subsubsection{Archi tra stanze}
 Gli archi tra i nodi di tipo stanza rappresentano il collegamento diretto tra due stanze.
 \subsubsection{Archi tra oggetti}
-Gli archi orientati tra i nodi di tipo oggetto rappresentano la relazione tra due oggetti. L'etichetta associata ad ogni arco appartiene all'insieme delle relazioni che possono essere inferite dal modello PSGTr. Queste informazioni sono importanti per poter pianificare task all'interno della missione che supportano il raggiungimento dell'obiettivo.
+Gli archi orientati tra i nodi di tipo oggetto rappresentano la \textbf{relazione tra due oggetti}. L'etichetta associata a ogni arco appartiene all'insieme delle relazioni che possono essere inferite dal modello PSGTr (Per l'elenco completo dei predicati consultare l'appendice \ref{appendix:psgtr-predicates}). Queste informazioni sono importanti per poter pianificare task all'interno della missione che supportano il raggiungimento dell'obiettivo.
 
 Per esempio, immaginiamo la missione "Prendi la bottiglia". Se è presente un ostacolo davanti alla bottiglia, rispetto alla posizione di presa del robot, questo deve prima pianificare lo spostamento dell'ostacolo. Ecco il motivo per il quali vi è la necessità di rappresentare queste relazioni tra oggetti.
 
@@ -264,7 +264,7 @@ Di seguito un esempio di mappa semantica e i vari sottografi.
 
 \section{Scena semantica}
 
-La Scena Semantica non è altro che un sottografo $G_{ss} = (V_{ss}, E_{ss})$ della mappa semantica che viene costantemente aggiornato con le ultime inferenze, senza considerare la suddivisione tra stanze e i precedenti oggetti individuati, dove:
+La Scena Semantica è un sottografo $G_{ss} = (V_{ss}, E_{ss})$ della mappa semantica che viene costantemente aggiornato con le ultime inferenze, senza considerare la suddivisione tra stanze e i precedenti oggetti individuati, dove:
 \begin{itemize}
   \item $V_{ss} = \{v \in V_m \mid v \text{ è un nodo oggetto} \}$
   \item $E_{ss} = \{(v,u) \in E_m \mid v \in V_{ss} \wedge u \in V_{ss} \}$

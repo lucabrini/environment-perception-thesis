@@ -14,7 +14,14 @@
     "*.bbl": true,
     "*.blg": true,
     "*.glg": true,
-    "*.gls": true
+    "*.gls": true,
+    "*.lof": true,
+    "*.lot": true,
+    "*.xdy": true,
+    "*.fdb_latexmk": true,
+    "*.fls": true,
+    "*.pyg": true,
+    "main-blx.bib": true
   },
   "[latex]": {
     "editor.wordWrap": "on"

@@ -42,7 +42,7 @@
         \item $R_{11}, R_{12}, R_{13}, ..., R_{33}$ sono gli elementi della matrice di rotazione 3x3.
         \item  $T_x, T_y, T_z$ sono le componenti del vettore di traslazione.
       \end{itemize}
-      Attraverso una sola moltiplicazione di matrici è possibile applicare sia la rotazione che la traslazione ad un punto $(x,y,z)$
+      Attraverso una sola moltiplicazione di matrici è possibile applicare sia la rotazione che la traslazione a un punto $(x,y,z)$
       \[
         \begin{bmatrix}
           x' \\
@@ -77,4 +77,13 @@
 \newglossaryentry{kubeedge}{
   name={KubeEdge},
   description={Progetto open source che estende Kubernetes da un cluster cloud a un cluster edge, permettendo di eseguire i pod su dispositivi edge come robot, macchine industriali e così via}
+}
+
+\newglossaryentry{panopticquality}{
+  name={Panoptic Quality (PQ)},
+  description={La Panoptic Quality (PQ) è una metrica utilizzata per valutare la performance degli algoritmi di segmentazione panottica, che combinano segmentazione semantica e delle istanze. PQ misura la qualità della segmentazione e del riconoscimento in un'unica metrica, considerando la sovrapposizione tra le previsioni e i segmenti di riferimento (IoU), i veri positivi (TP), i falsi positivi (FP) e i falsi negativi (FN). La formula di calcolo della PQ è:
+      \[
+        \text{PQ} = \frac{\sum_{(p, g) \in TP} \text{IoU}(p, g)}{|TP| + \frac{1}{2}|FP| + \frac{1}{2}|FN|}
+      \]
+      Un valore più alto di PQ indica una migliore performance dell'algoritmo di segmentazione.}
 }
