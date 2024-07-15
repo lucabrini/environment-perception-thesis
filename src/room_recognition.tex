@@ -144,7 +144,7 @@ Viene applicato un processo di dilatazione con un elemento strutturante quadrato
   \end{subfigure}
 \end{figure}
 \subsection{Analisi dello spazio libero}
-L'obiettivo di questa fase è quello di \textbf{individuare i punti critici} e le linee critiche che giacciono in corrispondenza dei passaggi stretti.
+L'obiettivo di questa fase è quello di \textbf{individuare i punti critici} e le linee critiche che giacciono in corrispondenza dei passaggi stretti.~
 \subsubsection{Diagramma di Voronoi}
 Si procede con il determinare il diagramma di Voronoi dello spazio libero. Nel paper originale viene utilizzato lo scheletro della mappa binaria come approssimazione di Voronoi. In questo lavoro, viene invece utilizzata la \textbf{trasformata asse mediano} poichè si è empiricamente notato che fornisce risultati migliori.
 
@@ -154,14 +154,14 @@ Si individuano nel diagramma di Voronoi i punti di branching ovvero i punti dove
   \centering
   \begin{subfigure}[t]{\textwidth}
     \centering
-    \includegraphics[width=0.9\textwidth]{room_recognition/mora/branching_points_kernels_1.png}
+    \includegraphics[width=0.8\textwidth]{room_recognition/mora/branching_points_kernels_1.png}
     \caption{Kernels per i branch a T}
-  \end{subfigure}\\
+  \end{subfigure}
   \begin{subfigure}[t]{\textwidth}
     \centering
-    \includegraphics[width=0.9\textwidth]{room_recognition/mora/branching_points_kernels_2.png}
+    \includegraphics[width=0.8\textwidth]{room_recognition/mora/branching_points_kernels_2.png}
     \caption{Kernels per i branch a Y}
-  \end{subfigure}\\
+  \end{subfigure}
   \caption{Kernels per l'individuazione dei punti di branch. In nero i valori -1, in grigio i valori 0 e in bianco i valori 1 dei kernels}
 \end{figure}
 \noindent
@@ -312,8 +312,8 @@ I diagrammi con meno di 20 pixels vengono scartati, in modo da rimuovere i diagr
 I diagrammi di voronoi estratti dallo spazio occupato sono utili per la ricerca delle protuberanze presenti vicino alle porte. Queste protuberanze sono individuate come endpoints, localizzati attraverso l'utilizzo della trasformata HIT or MISS con i kernels 3x3 seguenti:
 \begin{figure}[H]
   \centering
-  \includegraphics[width=0.9\textwidth]{room_recognition/mora/endpoints_kernels.png}
-  \caption{In nero i valori -1, in grigio i valori 0 e in bianco i valori 1 dei kernels}
+  \includegraphics[width=0.8\textwidth]{room_recognition/mora/endpoints_kernels.png}
+  \caption{Kernels per l’individuazione degli endpoitns. In nero i valori -1, in grigio i valori 0 e in bianco i valori 1 dei kernels}
 \end{figure}
 \begin{figure}[H]
   \centering
@@ -334,7 +334,7 @@ Infine, se:
 \end{itemize}
 Allora questo rappresenta una door location valida.\\\\
 Uno dei vantaggi di questa approccio è che la soglia \textit{threshold} non è fissa: viene infatti calcolata per ogni mappa come la media dei valori della trasformata distanza dello spazio occupato nei punti dove è presente il suo diagramma di Voronoi, moltiplicata per due. Rappresenta la larghezza media dei muri nella mappa analizzata.
-\begin{figure}
+\begin{figure}[H]
   \centering
   \begin{subfigure}[t]{0.45\textwidth}
     \centering
@@ -346,14 +346,16 @@ Uno dei vantaggi di questa approccio è che la soglia \textit{threshold} non è 
     \includegraphics[width=\textwidth]{room_recognition/mora/segments_valid_doors.png}
     \caption{Segmenti, intersection points e endpoints che soddisfano le condizioni e quindi sono elegibili come porte}
   \end{subfigure}
+  \caption{Esempio di Door location valide}
 \end{figure}
 \subsection{Separazione delle stanze}
 Si procede infine con la separazione delle stanze. Per ogni segmento in prossimità di una porta valida, si crea la maschera della linea critica che viene sottratta alla maschera dello spazio libero. Successivamente si esegue il labeling delle componenti connesse, e dopo aver filtrato le stanze con area inferiore a trenta pixels, si ottengono le stanze separate.
 \begin{figure}[H]
   \centering
   \includegraphics[width=0.45\textwidth]{room_recognition/mora/rooms.png}
-  \caption{Stanze separate}
+  \caption{Esempio di Stanze separate}
 \end{figure}
+\noindent
 Come si può notare, ci sono delle incorrettezze. Tuttavia, queste possono essere corrette con l'ausilio dell'utente, come verrà illustrato nella sezione successiva.
 
 \subsection{Generazione Grafo delle Stanze}
@@ -386,7 +388,7 @@ Infine se eliminano i nodi che non sono connessi a nessun arco, rimuovendo così
     \draw [<->] (a) -- (g);
     \draw [<->] (a) -- (h);
   \end{tikzpicture}
-  \caption{Grafo delle stanze generato a partire dalle stanze separate}
+  \caption{Esempio del Grafo delle stanze generato}
 \end{figure}
 \section{Visualizzazione e Modifica delle Stanze}
 Affinchè l'utente possa visualizzare i risultati del riconoscimento e modificare la divisione in stanze aggiugendone di nuove, eliminandone o modificandone di esistenti, è stato sviluppato un tool grafico all'interno della webapp già esistente per la gestione di Robee, la cosidetta \textit{console}. Il funzionamento della console esula dagli obiettivi di questa tesi, tuttavia è importante illustrare come è stata integrata la funzionalità di visualizzazione e modifica delle stanze all'interno di essa.

@@ -1,4 +1,5 @@
 \documentclass[a4paper, twoside]{book}
+\usepackage{layout}
 \usepackage{csquotes}
 \usepackage{graphicx} % allows inserting graphics
 \usepackage{listings}
@@ -26,6 +27,7 @@
 \usepackage{tcolorbox}
 \usepackage{chngcntr}
 \usepackage{emptypage}
+\usepackage[pass]{geometry}
 \usepackage[
 backend=bibtex,
 style=ieee,
@@ -37,6 +39,7 @@ sorting=ynt
 
 \counterwithout{figure}{chapter}
 \counterwithout{table}{chapter}
+\raggedbottom
 
 \pagestyle{plain} %oppure none
 \author{Luca Brini}
@@ -89,6 +92,7 @@ sorting=ynt
 
 \begin{document}
 
+\savegeometry{standardgeometry}
 \subfile{src/frontispiece}
 \myemptypage
 
@@ -166,5 +170,3 @@ sorting=ynt
 \listoftables
 
 \end{document}
-
-

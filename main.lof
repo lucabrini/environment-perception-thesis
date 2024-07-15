@@ -20,20 +20,21 @@
 \contentsline {figure}{\numberline {19}{\ignorespaces Schema dei funzionamento per il riconoscimento delle stanze e il salvataggio del grafo delle stanze}}{29}{figure.caption.52}%
 \contentsline {figure}{\numberline {20}{\ignorespaces Esempio di occupancy grid map utilizzata dal modulo di navigazione del robot}}{30}{figure.caption.53}%
 \contentsline {figure}{\numberline {21}{\ignorespaces Esempio di riconoscimento delle stanze tramite l'algoritmo di Voronoi originale \blx@tocontentsinit {0}\cite {thrun}}}{32}{figure.caption.54}%
-\contentsline {figure}{\numberline {24}{\ignorespaces Kernels per l'individuazione dei punti di branch. In nero i valori -1, in grigio i valori 0 e in bianco i valori 1 dei kernels}}{35}{figure.caption.63}%
-\contentsline {figure}{\numberline {25}{\ignorespaces Processo di individuazione dei punti di branch}}{36}{figure.caption.64}%
-\contentsline {figure}{\numberline {26}{\ignorespaces Trasformata distanza dello spazio libero}}{37}{figure.caption.66}%
-\contentsline {figure}{\numberline {27}{\ignorespaces Calcolo dell'orientamento del segmento. I quadrati in blu rappresentano i pixel del segmento}}{38}{figure.caption.68}%
-\contentsline {figure}{\numberline {28}{\ignorespaces Segmenti e intersection points. In rosso i segmenti, in verde le linee critiche delimitate dagli intersection points, in blu il diagramma di Voronoi}}{39}{figure.caption.70}%
-\contentsline {figure}{\numberline {30}{\ignorespaces In nero i valori -1, in grigio i valori 0 e in bianco i valori 1 dei kernels}}{40}{figure.caption.74}%
-\contentsline {figure}{\numberline {31}{\ignorespaces Diagramma di Voronoi dello spazio occupato con gli endpoints evidenziati in rosso}}{41}{figure.caption.75}%
-\contentsline {figure}{\numberline {33}{\ignorespaces Stanze separate}}{43}{figure.caption.77}%
-\contentsline {figure}{\numberline {34}{\ignorespaces Grafo delle stanze generato a partire dalle stanze separate}}{44}{figure.caption.78}%
-\contentsline {figure}{\numberline {35}{\ignorespaces Classi per la gestione dei layer}}{44}{figure.caption.79}%
-\contentsline {figure}{\numberline {36}{\ignorespaces Schema di funzionamento per la visualizzazione e modifica delle stanze}}{45}{figure.caption.80}%
-\contentsline {figure}{\numberline {37}{\ignorespaces Pagina di visualizzazione delle stanze}}{45}{figure.caption.81}%
+\contentsline {figure}{\numberline {24}{\ignorespaces Kernels per l'individuazione dei punti di branch. In nero i valori -1, in grigio i valori 0 e in bianco i valori 1 dei kernels}}{34}{figure.caption.63}%
+\contentsline {figure}{\numberline {25}{\ignorespaces Processo di individuazione dei punti di branch}}{35}{figure.caption.64}%
+\contentsline {figure}{\numberline {26}{\ignorespaces Trasformata distanza dello spazio libero}}{36}{figure.caption.66}%
+\contentsline {figure}{\numberline {27}{\ignorespaces Calcolo dell'orientamento del segmento. I quadrati in blu rappresentano i pixel del segmento}}{37}{figure.caption.68}%
+\contentsline {figure}{\numberline {28}{\ignorespaces Segmenti e intersection points. In rosso i segmenti, in verde le linee critiche delimitate dagli intersection points, in blu il diagramma di Voronoi}}{38}{figure.caption.70}%
+\contentsline {figure}{\numberline {30}{\ignorespaces Kernels per l’individuazione degli endpoitns. In nero i valori -1, in grigio i valori 0 e in bianco i valori 1 dei kernels}}{39}{figure.caption.74}%
+\contentsline {figure}{\numberline {31}{\ignorespaces Diagramma di Voronoi dello spazio occupato con gli endpoints evidenziati in rosso}}{40}{figure.caption.75}%
+\contentsline {figure}{\numberline {32}{\ignorespaces Esempio di Door location valide}}{41}{figure.caption.76}%
+\contentsline {figure}{\numberline {33}{\ignorespaces Esempio di Stanze separate}}{42}{figure.caption.77}%
+\contentsline {figure}{\numberline {34}{\ignorespaces Esempio del Grafo delle stanze generato}}{43}{figure.caption.78}%
+\contentsline {figure}{\numberline {35}{\ignorespaces Classi per la gestione dei layer}}{43}{figure.caption.79}%
+\contentsline {figure}{\numberline {36}{\ignorespaces Schema di funzionamento per la visualizzazione e modifica delle stanze}}{44}{figure.caption.80}%
+\contentsline {figure}{\numberline {37}{\ignorespaces Pagina di visualizzazione delle stanze}}{44}{figure.caption.81}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {43}{\ignorespaces Robee in versione 18}}{53}{figure.caption.93}%
+\contentsline {figure}{\numberline {43}{\ignorespaces Robee in versione 18}}{51}{figure.caption.93}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
