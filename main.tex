@@ -1,4 +1,4 @@
-\documentclass[a4paper, oneside]{book}
+\documentclass[a4paper, twoside]{book}
 \usepackage{csquotes}
 \usepackage{graphicx} % allows inserting graphics
 \usepackage{listings}
@@ -24,6 +24,8 @@
 \usepackage{float}
 \usepackage{afterpage}
 \usepackage{tcolorbox}
+\usepackage{chngcntr}
+\usepackage{emptypage}
 \usepackage[
 backend=bibtex,
 style=ieee,
@@ -32,6 +34,9 @@ sorting=ynt
 \addbibresource{bibliography.bib}
 
 \graphicspath{ {./images/} }
+
+\counterwithout{figure}{chapter}
+\counterwithout{table}{chapter}
 
 \pagestyle{plain} %oppure none
 \author{Luca Brini}
@@ -93,7 +98,14 @@ sorting=ynt
 \frontmatter
 \chapter*{Abstract}
 \subfile{src/abstract.tex}
+
 \tableofcontents
+
+\clearpage
+\myemptypage
+\clearpage
+\myemptypage
+
 
 \mainmatter
 % Introduzione
@@ -126,6 +138,11 @@ sorting=ynt
 
 \subfile{src/conclusions.tex}
 
+\clearpage
+\myemptypage
+\clearpage
+\myemptypage
+
 \addcontentsline{toc}{chapter}{Bibliografia}
 \printbibliography
 
@@ -137,6 +154,11 @@ sorting=ynt
 
 \addcontentsline{toc}{chapter}{Glossario}
 \printnoidxglossaries
+
+\clearpage
+\myemptypage
+\clearpage
+\myemptypage
 
 \addcontentsline{toc}{chapter}{Lista delle Figure}
 \listoffigures
